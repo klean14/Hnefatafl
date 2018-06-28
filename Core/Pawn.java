@@ -1,0 +1,43 @@
+package Core;
+import java.awt.Image;
+
+public class Pawn {
+	private int posX;
+	private int posY;
+	private Player player;
+	private Image pawn;
+	private boolean king = false;
+	
+		
+	public Pawn(int posX, int posY, Player player) {
+		this.posX = posX;
+		this.posY = posY;
+		this.player = player;
+	}
+	
+	/****************Getters and setters******************/
+	
+	public int getPosX() {return posX;}
+	public void setPosX(int posX) {this.posX = posX;}
+
+	public int getPosY() {return posY;}
+	public void setPosY(int posY) {this.posY = posY;}
+	
+	public Player getPlayer() {return player;}
+	
+	public boolean isKing() {return king;}
+	public void setKing(boolean king) {this.king = king;}
+
+	
+	/*****************************************************/
+
+	/**
+	 * Move the pawn to the designated tile
+	 * @param newPosX X coordinate of the new tile
+	 * @param newPosY Y coordinate of the new tile
+	 */
+	public void move(int newPosX, int newPosY) {
+		this.posX = newPosX;
+		this.posY = newPosY;
+	}
+}
