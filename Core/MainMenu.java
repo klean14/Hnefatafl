@@ -7,11 +7,12 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
 public class MainMenu extends JFrame implements ActionListener{
 	private JButton newGame,quit;
-	
+	private JComboBox gamesDrop;
 	
 	public MainMenu() {
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
@@ -23,14 +24,21 @@ public class MainMenu extends JFrame implements ActionListener{
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
 		
+		String[] gameStrings = {"Hnefatafl", "Tablut"};
+		gamesDrop = new JComboBox(gameStrings);
+		
 		newGame = new JButton("New Game");
 		newGame.addActionListener(this);
 		quit = new JButton("Quit");
 		quit.addActionListener(this);
 		newGame.setAlignmentX(CENTER_ALIGNMENT);
 		quit.setAlignmentX(CENTER_ALIGNMENT);
+		
+		add(gamesDrop);
 		add(newGame);
 		add(quit);
+		
+		this.revalidate();
 	}
 
 	@Override
@@ -39,7 +47,7 @@ public class MainMenu extends JFrame implements ActionListener{
 		// If newGame button was pressed
 		if(e.getSource() == newGame) {
 			
-			Game game = new Game();
+			Game game = new Game(gamesDrop.getSelectedItem().toString());
 			this.setVisible(false);
 			
 		}else if (e.getSource()==quit) {

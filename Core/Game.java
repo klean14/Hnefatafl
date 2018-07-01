@@ -28,13 +28,27 @@ public class Game {
 	
 	/*****************************************************/
 
-	public Game() {
-		pawn = PawnGenerator.generatePawns();
-		tt = new TableTop(pawn,this);
+	public Game(String game) {
+		
+		Player p1 = new Player("",1);
+		Player p2 = new Player("",2);
+		
+		switch(game) {
+		case "Hnefatafl":
+			pawn = PawnGenerator.generatePawnsHnefatafl(p1,p2);
+			tt = new TableTop(pawn,this,11);
+			break;
+		case "Tablut":
+			pawn = PawnGenerator.generatePawnsTablut(p1,p2);
+			tt = new TableTop(pawn,this,9);
+			break;
+		}
+		
+		
 		tt.setVisible(true);
 		tt.disablePlayerPawns(1);
 	}
-	
+
 	/**
 	 * Check if there are any pawns between the 2 tiles
 	 * @param thisX X coordinate of old tile
@@ -167,7 +181,7 @@ public class Game {
 		 * Highlight the available tiles the pawn can move to
 		 */
 		private void highlightTiles() {
-			for(int i = 0; i < 11; i++) {
+			for(int i = 0; i < board.length; i++) {
 				board[x][i].setBackground(new Color(244,164,96));
 				board[i][y].setBackground(new Color(244,164,96));
 			}
