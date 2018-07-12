@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 public class Game {
 	/** The tile that was selected first **/
 	private Tile selectedTile = null;
@@ -42,6 +44,9 @@ public class Game {
 			pawn = PawnGenerator.generatePawnsTablut(p1,p2);
 			tt = new TableTop(pawn,this,9);
 			break;
+		case "Tawlbawrdd":
+			pawn = PawnGenerator.generatePawnsTawlbawrdd(p1,p2);
+			tt = new TableTop(pawn,this,11);
 		}
 		
 		
@@ -152,11 +157,16 @@ public class Game {
 							
 							rules.checkCapture(board, pawn, selectedPawn, Game.this);
 							
+							
 							// Increment round when a player made a move
 							round++;
 							tt.displayRound(round);
 							tt.displayPlayer((round % 2)+1);
 							tt.drawBoard();
+							
+							if(rules.checkEnd(pawn, board)) {
+								JOptionPane.showMessageDialog(null, "Game Over!");
+							}
 							
 							// Disable the previous player's pawns based on which round it is
 							tt.disablePlayerPawns((round % 2)+1);
