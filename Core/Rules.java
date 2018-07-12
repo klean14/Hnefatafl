@@ -2,6 +2,8 @@ package Core;
 
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 public class Rules {
 
 	// Rules from: http://tafl.cyningstan.com/page/20/a-rule-book-for-hnefatafl
@@ -29,7 +31,6 @@ public class Rules {
 			int l = (int) ( i * Math.pow(-1,i))/2;
 			int k = (int) (-l + Math.pow(-1,i));
 
-//			System.out.println(l + ", " + k);
 			try {
 				try {
 					// Check the tile next to the pawn
@@ -53,7 +54,6 @@ public class Rules {
 							if(alliedPawn.getPlayer() == player) {
 								// Remove that pawn
 								removePawn(board[xPos + l][yPos + k],pawns,enemyPawn);
-								break;
 							}
 						}
 					}
@@ -64,7 +64,6 @@ public class Rules {
 					// Check if the tile 2 tiles away from the pawn is a restricted tile
 					if( board[xPos + 2*l][yPos + 2*k].isRestricted()) {
 						removePawn(board[xPos + l][yPos + k],pawns,enemyPawn);
-						break;
 					}
 				}
 
@@ -74,91 +73,6 @@ public class Rules {
 				// Do nothing
 			}
 		}
-		/*
-		try {
-			// Downwards
-			try {
-				if(board[xPos][yPos + 1].isOccupied()) {
-					enemyPawn = game.findPawn(xPos, yPos + 1);
-					alliedPawn = game.findPawn(xPos, yPos + 2);
-					if(enemyPawn.getPlayer() != player) {
-						if(alliedPawn.getPlayer() == player) {
-							//TODO delete the pawn
-							removePawn(board[xPos][yPos + 1],pawns,enemyPawn);
-						}
-					}
-				}
-			} 
-			catch(NullPointerException e) {
-
-				if( board[xPos][yPos + 2].isRestricted()) {
-					removePawn(board[xPos][yPos + 1],pawns,enemyPawn);
-				}
-			}
-
-			// Upwards
-			try {
-				if(board[xPos][yPos - 1].isOccupied()) {
-					enemyPawn = game.findPawn(xPos, yPos - 1);
-					alliedPawn = game.findPawn(xPos, yPos - 2);
-					if(enemyPawn.getPlayer() != player) {
-
-						if(alliedPawn.getPlayer() == player) {
-							//TODO delete the pawn
-							removePawn(board[xPos][yPos - 1],pawns,enemyPawn);
-						}
-					}
-				}
-			} 
-			catch(NullPointerException e) {
-				if( board[xPos][yPos - 2].isRestricted()) {
-					removePawn(board[xPos][yPos - 1],pawns,enemyPawn);
-				}
-			}
-
-			// To the right
-			try {
-				if(board[xPos + 1][yPos].isOccupied()) {
-					enemyPawn = game.findPawn(xPos + 1, yPos);
-					alliedPawn = game.findPawn(xPos + 2, yPos);
-					if(enemyPawn.getPlayer() != player) {
-						if(alliedPawn.getPlayer() == player) {
-							//TODO delete the pawn
-							removePawn(board[xPos + 1][yPos],pawns,enemyPawn);
-						}
-					}
-				}
-			} 
-			catch(NullPointerException e) {
-				if( board[xPos + 2][yPos].isRestricted()) {
-					removePawn(board[xPos + 1][yPos],pawns,enemyPawn);
-				}
-			}
-
-			// To the left
-			try {
-				if(board[xPos - 1][yPos].isOccupied()){
-					enemyPawn = game.findPawn(xPos - 1, yPos);
-					alliedPawn = game.findPawn(xPos - 2, yPos);
-					if(enemyPawn.getPlayer() != player) {
-						if(alliedPawn.getPlayer() == player) {
-							//TODO delete the pawn
-							removePawn(board[xPos - 1][yPos],pawns,enemyPawn);
-						}
-					}
-				}
-			} 
-			catch(NullPointerException e) {
-				if( board[xPos - 2][yPos].isRestricted()) {
-					removePawn(board[xPos - 1][yPos],pawns,enemyPawn);
-				}
-			}
-		} 
-
-		// In case the pawn reached the edge of the board
-		catch (ArrayIndexOutOfBoundsException e) {
-			// Do nothing
-		}*/
 	}
 
 	/**
@@ -171,18 +85,19 @@ public class Rules {
 		int xPos = king.getPosX();
 		int yPos = king.getPosY();
 		Player player = king.getPlayer();
-		Pawn enemyPawn = null;
+		
 		int count = 0;
 		
 		
 		// Check all 4 sides adjacent of the king
 		for(int i = 0; i < 4; i++) {
+			Pawn enemyPawn = null;
 			int l = (int) ( i * Math.pow(-1,i))/2;
 			int k = (int) (-l + Math.pow(-1,i));
 
 			try {
 				try {
-					if(board[xPos + l][yPos + k].isOccupied()) {
+					if(board[xPos + l][yPos + k].isOccupied() || board[xPos + l][yPos + k].isRestricted()) {
 						enemyPawn = board[xPos + l][yPos + k].getPawn();
 						if(enemyPawn.getPlayer() != player) {
 							count++;
@@ -191,7 +106,6 @@ public class Rules {
 				}	
 				
 				catch(NullPointerException e) {
-
 					if( board[xPos + l][yPos + k].isRestricted()) {
 						count++;
 					}
@@ -206,15 +120,31 @@ public class Rules {
 		
 		// If surrounded by all 4 sides
 		if(count == 3) {
-			System.out.println("THE KING IS DEAD");
+//			JOptionPane.showMessageDialog(null, "THE KING IS DEAD");
+//			System.out.println("THE KING IS DEAD");
 			removePawn(board[xPos][yPos],pawns,king);
 		}
 		
 	}
 
-	public boolean checkEnd() {
-		//TODO
-		return false;
+	public boolean checkEnd(ArrayList<Pawn> pawns, Tile[][] board) {
+		int nRows = board.length - 1;
+		int nCols = board[0].length - 1;
+		
+		if(board[0][0].isOccupied() || board[0][nRows].isOccupied() || board[nCols][0].isOccupied() || board[nCols][nRows].isOccupied()) {
+			System.out.println("The King has escaped!");
+			return true;
+		}
+		
+		// Check if the king pawn is still in the game
+		for(Pawn pawn : pawns) {
+			if(pawn.isKing()) {
+				return false;
+			}
+		}
+		
+		System.out.println("The king is dead");
+		return true;
 	}
 
 	private void removePawn(Tile tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
