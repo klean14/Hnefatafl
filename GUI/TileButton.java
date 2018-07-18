@@ -1,20 +1,23 @@
-package Core;
+package GUI;
 import javax.swing.JButton;
 
-public class Tile extends JButton{
+import Core.Pawn;
+import Core.TileInterface;
+
+public class TileButton extends JButton implements TileInterface{
 	private int posX;
 	private int posY;
 	private boolean occupied = false;
 	private boolean restricted = false;
 	private Pawn pawn;
 	
-	public Tile(int posX, int posY) {
+	public TileButton(int posX, int posY) {
 		this.posX = posX;
 		this.posY = posY;
 		this.pawn = null;
 	}
 	
-	public Tile(int posX, int posY, Pawn pawn) {
+	public TileButton(int posX, int posY, Pawn pawn) {
 		this.posX = posX;
 		this.posY = posY;
 		this.pawn = pawn;
