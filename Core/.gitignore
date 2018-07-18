@@ -16,3 +16,6 @@
 Hnefatafl/references
 /TableTopCMD.class
 /GameLogic.class
+/TileAbstract.class
+/TileButton.class
+/TileInterface.class
