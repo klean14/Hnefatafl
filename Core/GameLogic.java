@@ -4,15 +4,15 @@ import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
+import CommandLine.TableTopCMD;
 import GUI.TableTopGUI;
+import GUI.TileButton;
 
 public class GameLogic {
 	/** The tile that was selected first **/
-	private Tile selectedTile = null;
+	private TileInterface selectedTile = null;
 	/** The pawn that was on the selected tile **/
 	private Pawn selectedPawn = null;
-	
-	private TableTopGUI tt;
 	
 	/** An array of pawns **/
 	private ArrayList<Pawn> pawn;
@@ -29,28 +29,36 @@ public class GameLogic {
 	
 	/*****************************************************/
 
-	public GameLogic(String game) {
+	public GameLogic(String game, boolean gui) {
 		
 		Player p1 = new Player("",1);
 		Player p2 = new Player("",2);
-		
+
 		switch(game) {
 		case "Hnefatafl":
 			pawn = PawnGenerator.generatePawnsHnefatafl(p1,p2);
-			tt = new TableTopGUI(pawn,this,11);
+			if(gui)
+				new TableTopGUI(pawn,this,11).setVisible(true);
+			else {
+				new TableTopCMD(pawn,this,11);
+			}
 			break;
 		case "Tablut":
 			pawn = PawnGenerator.generatePawnsTablut(p1,p2);
-			tt = new TableTopGUI(pawn,this,9);
+			if(gui)
+				new TableTopGUI(pawn,this,9).setVisible(true);
+			else {	
+				
+			}
 			break;
 		case "Tawlbawrdd":
 			pawn = PawnGenerator.generatePawnsTawlbawrdd(p1,p2);
-			tt = new TableTopGUI(pawn,this,11);
+			if(gui)
+				new TableTopGUI(pawn,this,11).setVisible(true);
+			else {
+				
+			}
 		}
-		
-		
-		tt.setVisible(true);
-		tt.disablePlayerPawns(1);
 	}
 
 	/**
@@ -61,31 +69,31 @@ public class GameLogic {
 	 * @param thatY Y coordinate of new tile
 	 * @return true if there are pawns between, otherwise false
 	 */
-	public boolean pawnsBetween(Tile[][] tile, int thisX, int thatX,int thisY,int thatY) {
+	public boolean pawnsBetween(TileInterface[][] board, int thisX, int thatX,int thisY,int thatY) {
 		int resultX = thisX - thatX;
 		int resultY = thisY - thatY;
 		// Moves to the right
 		if(resultX < 0) {
 			for(int i = thisX+1; i < thatX; i++) {
-				if(tile[i][thisY].isOccupied()) {return true;}
+				if(board[i][thisY].isOccupied()) {return true;}
 			}
 		}
 		//Moves to the left
 		else if(resultX > 0) {
 			for(int i = thisX-1; i > thatX; i--) {
-				if(tile[i][thisY].isOccupied()) {return true;}
+				if(board[i][thisY].isOccupied()) {return true;}
 			}
 		}
 		//Moves downwards
 		else if(resultY < 0) {
 			for(int j = thisY+1; j < thatY; j++) {
-					if(tile[thisX][j].isOccupied()) {return true;}
+					if(board[thisX][j].isOccupied()) {return true;}
 			}
 		}
 		//Moves upwards
 		else {
 			for(int j = thisY-1; j > thatY; j--) {
-				if(tile[thisX][j].isOccupied()) {return true;}
+				if(board[thisX][j].isOccupied()) {return true;}
 			}
 		}
 		
@@ -115,7 +123,7 @@ public class GameLogic {
 	 * @param x
 	 * @param y
 	 */
-	public void nextRound(Tile[][] board,int x, int y) {
+	public void nextRound(TileInterface[][] board,int x, int y) {
 		try { 
 			// If there is a pawn in the tile pressed, save the selected tile for later use 
 			if(board[x][y].isOccupied()) {
