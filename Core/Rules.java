@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
+import GUI.TileButton;
+/**
+ * This class has all the necessary checks for capturing a pawn (or the king) and if the game has ended
+ *
+ */
 public class Rules {
 
 	// Rules from: http://tafl.cyningstan.com/page/20/a-rule-book-for-hnefatafl
@@ -15,7 +20,7 @@ public class Rules {
 	 * @param pawn The Pawn object that initiated the check
 	 * @param game The Game object
 	 */
-	public void checkCapture(Tile[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
+	public void checkCapture(TileInterface[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
 		int xPos = pawn.getPosX();
 		int yPos = pawn.getPosY();
 		Player player = pawn.getPlayer();
@@ -81,7 +86,7 @@ public class Rules {
 	 * @param board 2D array of Tile type
 	 * @param pawns ArrayList of all the Pawn objects
 	 */
-	private void checkCaptureKing(Pawn king, Tile[][] board, ArrayList<Pawn> pawns) {
+	private void checkCaptureKing(Pawn king, TileInterface[][] board, ArrayList<Pawn> pawns) {
 		int xPos = king.getPosX();
 		int yPos = king.getPosY();
 		Player player = king.getPlayer();
@@ -127,7 +132,7 @@ public class Rules {
 		
 	}
 
-	public boolean checkEnd(ArrayList<Pawn> pawns, Tile[][] board) {
+	public boolean checkEnd(ArrayList<Pawn> pawns, TileInterface[][] board) {
 		int nRows = board.length - 1;
 		int nCols = board[0].length - 1;
 		
@@ -147,11 +152,9 @@ public class Rules {
 		return true;
 	}
 
-	private void removePawn(Tile tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
+	private void removePawn(TileInterface tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
 		tile.setPawn(null);
-		tile.setText("");
 		tile.setOccupied(false);
-		tile.setEnabled(true);
 		pawns.remove(enemyPawn);
 	}
 
