@@ -15,7 +15,7 @@ public class Rules {
 	 * @param pawn The Pawn object that initiated the check
 	 * @param game The Game object
 	 */
-	public void checkCapture(Tile[][] board,ArrayList<Pawn> pawns, Pawn pawn, Game game) {
+	public void checkCapture(Tile[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
 		int xPos = pawn.getPosX();
 		int yPos = pawn.getPosY();
 		Player player = pawn.getPlayer();
