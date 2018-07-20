@@ -6,6 +6,9 @@ import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
@@ -40,8 +43,15 @@ public class TableTopGUI extends JFrame {
 		this.setTitle("Hnefatafl");
 		this.setSize(800, 800);
 		this.setResizable(false);
-		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		
+		addWindowListener(new WindowAdapter() {
+			 @Override
+			 public void windowClosing(WindowEvent e) {
+				 new MainMenuGUI();
+				 dispose();
+			 }        
+		});
 		//Show the grid in the center of the screen
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
@@ -65,7 +75,7 @@ public class TableTopGUI extends JFrame {
 
 		printBoard();
 		clearBackground();
-		disablePlayerPawns(1);
+//		disablePlayerPawns(1);
 	}
 	
 
@@ -220,19 +230,19 @@ public class TableTopGUI extends JFrame {
 			
 			clearBackground();
 			
+			game.nextRound(board, x, y);
+			
 			if(board[x][y].isOccupied()) {
 				highlightTiles();
 				board[x][y].setBackground(Color.YELLOW);
 			}
-			
-			game.nextRound(board, x, y);
 			
 			int round = game.getRound();
 			displayRound(round);
 			displayPlayer((round % 2)+1);
 			printBoard();
 			
-			disablePlayerPawns((round % 2)+1);
+//			disablePlayerPawns((round % 2)+1);
 
 		}
 		/**
