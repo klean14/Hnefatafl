@@ -48,7 +48,7 @@ public class GameLogic {
 			if(gui)
 				new TableTopGUI(pawn,this,9).setVisible(true);
 			else {	
-				
+				new TableTopCMD(pawn,this,9);
 			}
 			break;
 		case "Tawlbawrdd":
@@ -56,7 +56,7 @@ public class GameLogic {
 			if(gui)
 				new TableTopGUI(pawn,this,11).setVisible(true);
 			else {
-				
+				new TableTopCMD(pawn,this,11);
 			}
 		}
 	}
@@ -138,34 +138,44 @@ public class GameLogic {
 			
 			// If there is no pawn on the tile pressed
 			else { 
-				// Only allowed to move in a straight line ( ^ is xor operation)
-				if(selectedTile.getPosX() == x ^ selectedTile.getPosY() == y) {
-					if(!pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
-//						selectedTile.setText("");
-						
-						selectedTile.setOccupied(false);
-						selectedTile.setPawn(null);
-						
-						// Move the selectedPawn to the new location
-						selectedPawn.move(x, y);
-						
-						rules.checkCapture(board, pawn, selectedPawn, GameLogic.this);
-						
-						
-						// Increment round when a player made a move
-						round++;
-						
-						if(rules.checkEnd(pawn, board)) {
-							JOptionPane.showMessageDialog(null, "Game Over!");
+				// Check that the correct player played
+				if((round % 2 )+ 1 == selectedPawn.getPlayer().getID()) {
+					
+					// Only allowed to move in a straight line ( ^ is xor operation)
+					if(selectedTile.getPosX() == x ^ selectedTile.getPosY() == y) {
+						if(!pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
+		
+							selectedTile.setOccupied(false);
+							selectedTile.setPawn(null);
+							
+							// Move the selectedPawn to the new location
+							selectedPawn.move(x, y);
+							
+							rules.checkCapture(board, pawn, selectedPawn, GameLogic.this);
+							
+							
+							// Increment round when a player made a move
+							round++;
+							
+							if(rules.checkEnd(pawn, board)) {
+								JOptionPane.showMessageDialog(null, "Game Over!");
+							}
+							
+							
+							// Reset the selection
+							selectedPawn = null;
+							selectedTile = null;
+						}else {
+							System.out.println("Pawn detected in between");
 						}
-						
-						
-						// Reset the selection
-						selectedPawn = null;
-						selectedTile = null;
-					}else {
-						System.out.println("Pawn detected in between");
+							
 					}
+					else {
+						System.out.println("Invalid move");
+					}
+				}
+				else {
+					System.out.println("Wrong player's turn");
 				}
 			}
 		}
