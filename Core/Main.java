@@ -1,5 +1,6 @@
 package Core;
 
+import CommandLine.MainMenuCMD;
 import GUI.MainMenuGUI;
 
 public class Main {
@@ -8,7 +9,7 @@ public class Main {
 		for (String arg : args) {
 			
 			if (arg.equalsIgnoreCase("-g"))  new MainMenuGUI();
-			if (arg.equalsIgnoreCase("-c"))  new GameLogic("Hnefatafl",false);
+			if (arg.equalsIgnoreCase("-c"))  new MainMenuCMD();
 			
 		}
 		
