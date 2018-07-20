@@ -3,21 +3,19 @@ package GUI;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 
 import Core.GameLogic;
 
 public class MainMenuGUI extends JFrame implements ActionListener{
+	
 	private JButton newGame,quit;
 	private JPanel panel;
 	private JComboBox<String> gamesDrop;
@@ -69,7 +67,7 @@ public class MainMenuGUI extends JFrame implements ActionListener{
 		if(e.getSource() == newGame) {
 			
 			new GameLogic(gamesDrop.getSelectedItem().toString(),true);
-			this.setVisible(false);
+			dispose();
 			
 		}else if (e.getSource()==quit) {
 			System.exit(0);
