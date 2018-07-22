@@ -30,7 +30,7 @@ public class GameLogic {
 	/*****************************************************/
 
 	public GameLogic(String game, boolean gui) {
-		
+		pawn = null;
 		Player p1 = new Player("",1);
 		Player p2 = new Player("",2);
 
