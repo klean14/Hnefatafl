@@ -139,10 +139,10 @@ public class GameLogic {
 			// If there is no pawn on the tile pressed
 			else { 
 				// Check that the correct player played
-				if((round % 2 )+ 1 == selectedPawn.getPlayer().getID()) {
+				if(playerTurn()) {
 					
 					// Only allowed to move in a straight line ( ^ is xor operation)
-					if(selectedTile.getPosX() == x ^ selectedTile.getPosY() == y) {
+					if(legalMove(x, y)) {
 						if(!pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
 		
 							selectedTile.setOccupied(false);
@@ -152,7 +152,6 @@ public class GameLogic {
 							selectedPawn.move(x, y);
 							
 							rules.checkCapture(board, pawn, selectedPawn, GameLogic.this);
-							
 							
 							// Increment round when a player made a move
 							round++;
@@ -182,6 +181,13 @@ public class GameLogic {
 		catch(NullPointerException error) {
 			System.out.println("No pawn selected");
 		}
+	}
+	public boolean legalMove(int x, int y) {
+		return selectedTile.getPosX() == x ^ selectedTile.getPosY() == y;
+	}
+	
+	public boolean playerTurn() {
+		return (round % 2 )+ 1 == selectedPawn.getPlayer().getID();
 	}
 	
 	

@@ -231,7 +231,7 @@ public class TableTopGUI extends JFrame {
 			
 			game.nextRound(board, x, y);
 			
-			if(board[x][y].isOccupied()) {
+			if(board[x][y].isOccupied() && game.playerTurn()) {
 				highlightTiles();
 				board[x][y].setBackground(Color.YELLOW);
 			}
