@@ -21,6 +21,10 @@ import Core.GameLogic;
 
 public class MainMenuGUI extends JFrame implements ActionListener{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JButton newGameButton,quitButton,loadGameButton;
 	private JPanel panel;
 	private JComboBox<String> gamesDrop;
@@ -102,6 +106,11 @@ public class MainMenuGUI extends JFrame implements ActionListener{
 			tt = (TableTopGUI) in.readObject();
 			tt.setUpListeners();
 			tt.setVisible(true);
+			
+			file.close();
+			in.close();
+			
+			dispose();
 		} catch (FileNotFoundException e1) {
 			JOptionPane.showMessageDialog(null, "File not found", "File Error", JOptionPane.ERROR_MESSAGE);
 			// TODO Auto-generated catch block
