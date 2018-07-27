@@ -1,17 +1,18 @@
 package Core;
 
 import java.util.ArrayList;
-
-import javax.swing.JOptionPane;
-
-import GUI.TileButton;
 /**
  * This class has all the necessary checks for capturing a pawn (or the king) and if the game has ended
  *
  */
-public class Rules {
+public class Rules implements java.io.Serializable {
 
 	// Rules from: http://tafl.cyningstan.com/page/20/a-rule-book-for-hnefatafl
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Check if the player has captured a pawn

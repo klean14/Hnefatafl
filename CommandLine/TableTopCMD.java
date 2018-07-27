@@ -1,21 +1,37 @@
 package CommandLine;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import Core.GameLogic;
 import Core.Pawn;
+import Core.Rules;
 
-public class TableTopCMD {
+public class TableTopCMD implements java.io.Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private TileCLI[][] board;
 	
 	private int boardSize;
 	
 	private GameLogic game;
 	
+	private Rules rules = new Rules();
+	
+	private static String filename = "save_game.ser";
+	
+	private ArrayList<Pawn> pawn;
+	
 	/**
-	 * Method that follows the logic sequence of the game
+	 * Default constructor
 	 * @param pawns the arraylist of pawns
 	 * @param game GameLogic instance
 	 * @param size The size of the board
@@ -25,7 +41,15 @@ public class TableTopCMD {
 		this.game = game;
 		this.boardSize = size;
 		this.board = new TileCLI[size][size];
+		this.pawn = pawns;
 		
+		gameSequence();
+	}
+
+	/**
+	 * Method that follows the logic sequence of the game
+	 */
+	public void gameSequence() {
 		createBoard();
 		
 		while(true) {
@@ -34,8 +58,15 @@ public class TableTopCMD {
 				System.out.println("Round: " + round);
 				System.out.println("Player " + ((round % 2)+1) + " plays");
 				
-				printBoard(size);
-				System.out.println("Input <yx> <yx> of the old and new position of the pawn respectively, separated by as space or type \"exit\" to exit: ");
+				printBoard(boardSize);
+				
+				
+				if(rules.checkEnd(pawn, board)) {
+					System.out.println("Congratulations Player " + ((--round % 2) + 1));
+					new MainMenuCMD();
+				}
+				
+				System.out.println("Input <yx> <yx> of the old and new position of the pawn respectively, separated by as space or type \"exit\" to exit. You can also save the game by typing \"save\": ");
 				// Read user input
 				Scanner reader = new Scanner(System.in);
 				String userInput = reader.nextLine();
@@ -43,20 +74,26 @@ public class TableTopCMD {
 				if(userInput.equals("exit")) {
 					new MainMenuCMD();
 				}
-				// Split into 2 Strings
-				String[] token = userInput.split(" ");
+				else if(userInput.equals("save")) {
+					saveGame();
+				}
+				else {
+					// Split into 2 Strings
+					String[] token = userInput.split(" ");
+					
+					// Extract the position of the pawn to be moved
+					int oldPosY =  (int)token[0].charAt(0) - 97;
+					int oldPosX = Integer.parseInt(token[0].substring(1, token[0].length())) - 1;
+					
+					game.nextRound(board,oldPosX,oldPosY);
+					
+					//Extract the position of the new position
+					int newPosY = (int)token[1].charAt(0) - 97;
+					int newPosX = Integer.parseInt(token[1].substring(1, token[1].length())) - 1;
+					
+					game.nextRound(board,newPosX,newPosY);
+				}
 				
-				// Extract the position of the pawn to be moved
-				int oldPosY =  (int)token[0].charAt(0) - 97;
-				int oldPosX = Integer.parseInt(token[0].substring(1, token[0].length())) - 1;
-				
-				game.nextRound(board,oldPosX,oldPosY);
-				
-				//Extract the position of the new position
-				int newPosY = (int)token[1].charAt(0) - 97;
-				int newPosX = Integer.parseInt(token[1].substring(1, token[1].length())) - 1;
-				
-				game.nextRound(board,newPosX,newPosY);
 			} 
 			catch (NullPointerException e) {
 				System.out.println("No pawn found");
@@ -64,9 +101,35 @@ public class TableTopCMD {
 			catch (ArrayIndexOutOfBoundsException e1) {
 				System.out.println("Wrong input. Add the old AND new position of the pawn.");
 			}
-			catch (NumberFormatException e1) {
-				System.out.println("Wrong input. Type first a letter and second a number.");
-			}
+//			catch (NumberFormatException e1) {
+//				System.out.println("Wrong input. Type first a letter and second a number.");
+//			}
+		}
+	}
+
+	/**
+	 * Saves the game state
+	 */
+	private void saveGame() {
+		FileOutputStream file = null;
+		ObjectOutputStream out = null;
+		try {
+			file = new FileOutputStream(filename);
+			out = new ObjectOutputStream(file);
+			
+			out.writeObject(this);
+			System.out.println("Game saved..");
+			
+			file.close();
+			out.close();
+		} 
+		catch (FileNotFoundException e) {
+
+//			e.printStackTrace();
+		} 
+		catch (IOException e) {
+
+//			e.printStackTrace();
 		}
 	}
 

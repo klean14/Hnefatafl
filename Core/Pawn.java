@@ -1,7 +1,11 @@
 package Core;
 import java.awt.Image;
 
-public class Pawn {
+public class Pawn implements java.io.Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int posX;
 	private int posY;
 	private Player player;

@@ -44,7 +44,10 @@ public class PawnGenerator {
 		pawn.add(new Pawn(6,4,p2));
 		pawn.add(new Pawn(3,5,p2));
 		pawn.add(new Pawn(4,5,p2));
+		
+		// King
 		pawn.add(new Pawn(5,5,p2));
+		
 		pawn.add(new Pawn(6,5,p2));
 		pawn.add(new Pawn(7,5,p2));
 		pawn.add(new Pawn(4,6,p2));
@@ -88,7 +91,10 @@ public class PawnGenerator {
 		pawn.add(new Pawn(4,3,p2));
 		pawn.add(new Pawn(2,4,p2));
 		pawn.add(new Pawn(3,4,p2));
+		
+		// King
 		pawn.add(new Pawn(4,4,p2));
+		
 		pawn.add(new Pawn(5,4,p2));
 		pawn.add(new Pawn(6,4,p2));
 		pawn.add(new Pawn(4,5,p2));
@@ -139,7 +145,10 @@ public class PawnGenerator {
 		pawn.add(new Pawn(5,6,p2));
 		pawn.add(new Pawn(5,7,p2));
 		pawn.add(new Pawn(5,8,p2));
+		
+		// King
 		pawn.add(new Pawn(5,5,p2));
+		
 		pawn.add(new Pawn(2,5,p2));
 		pawn.add(new Pawn(3,5,p2));
 		pawn.add(new Pawn(4,5,p2));

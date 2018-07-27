@@ -2,13 +2,14 @@ package Core;
 
 import java.util.ArrayList;
 
-import javax.swing.JOptionPane;
-
 import CommandLine.TableTopCMD;
 import GUI.TableTopGUI;
-import GUI.TileButton;
 
-public class GameLogic {
+public class GameLogic implements java.io.Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/** The tile that was selected first **/
 	private TileInterface selectedTile = null;
 	/** The pawn that was on the selected tile **/
@@ -155,11 +156,6 @@ public class GameLogic {
 							
 							// Increment round when a player made a move
 							round++;
-							
-							if(rules.checkEnd(pawn, board)) {
-								JOptionPane.showMessageDialog(null, "Game Over!");
-							}
-							
 							
 							// Reset the selection
 							selectedPawn = null;

@@ -1,6 +1,6 @@
 package Core;
 
-public interface TileInterface {
+public interface TileInterface extends java.io.Serializable{
 	
 	
 	/****************Getters and setters******************/
