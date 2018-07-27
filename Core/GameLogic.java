@@ -39,7 +39,7 @@ public class GameLogic implements java.io.Serializable{
 		case "Hnefatafl":
 			pawn = PawnGenerator.generatePawnsHnefatafl(p1,p2);
 			if(gui)
-				new TableTopGUI(pawn,this,11).setVisible(true);
+				new TableTopGUI(pawn,this,11,game).setVisible(true);
 			else {
 				new TableTopCMD(pawn,this,11);
 			}
@@ -47,7 +47,7 @@ public class GameLogic implements java.io.Serializable{
 		case "Tablut":
 			pawn = PawnGenerator.generatePawnsTablut(p1,p2);
 			if(gui)
-				new TableTopGUI(pawn,this,9).setVisible(true);
+				new TableTopGUI(pawn,this,9,game).setVisible(true);
 			else {	
 				new TableTopCMD(pawn,this,9);
 			}
@@ -55,7 +55,7 @@ public class GameLogic implements java.io.Serializable{
 		case "Tawlbawrdd":
 			pawn = PawnGenerator.generatePawnsTawlbawrdd(p1,p2);
 			if(gui)
-				new TableTopGUI(pawn,this,11).setVisible(true);
+				new TableTopGUI(pawn,this,11,game).setVisible(true);
 			else {
 				new TableTopCMD(pawn,this,11);
 			}
@@ -121,8 +121,8 @@ public class GameLogic implements java.io.Serializable{
 	/**
 	 * 
 	 * @param board
-	 * @param x
-	 * @param y
+	 * @param x x Position of the selected Tile
+	 * @param y y position of the selected Tile
 	 */
 	public void nextRound(TileInterface[][] board,int x, int y) {
 		try { 

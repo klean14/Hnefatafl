@@ -8,21 +8,35 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import Core.GameLogic;
 import Core.Pawn;
+import Core.Rules;
 
 public class TableTopGUI extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	private JPanel contents,topPane;
 	
 	private JLabel roundLabel, playerTurnLabel;
+	
+	private JButton saveGameButton;
 	
 	private TileButton[][] board;
 	
@@ -32,25 +46,23 @@ public class TableTopGUI extends JFrame {
 	
 	private GameLogic game;
 	
-	public TableTopGUI(ArrayList<Pawn> pawns,GameLogic game, int size) {
+	private Rules rules = new Rules();
+
+	private static String filename = "save_game_gui.ser";
+	
+	public TableTopGUI(ArrayList<Pawn> pawns,GameLogic game, int size, String title) {
 
 		this.game = game;
 		this.boardSize = size;
 		this.board = new TileButton[size][size];
 		this.pawn = pawns;
 		
-		this.setTitle("Hnefatafl");
+		this.setTitle(title);
 		this.setSize(800, 800);
 		this.setResizable(false);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		
-		addWindowListener(new WindowAdapter() {
-			 @Override
-			 public void windowClosing(WindowEvent e) {
-				 new MainMenuGUI();
-				 dispose();
-			 }        
-		});
+		
 		//Show the grid in the center of the screen
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
@@ -62,22 +74,50 @@ public class TableTopGUI extends JFrame {
 		// JPanels
 		contents = new JPanel(new GridLayout(boardSize,boardSize));
 		
-		topPane = new JPanel(new GridLayout(2,1));
+		// JButtons
+		saveGameButton = new JButton("Save Game");
+		
+		topPane = new JPanel(new GridLayout(3,1));
 		topPane.setPreferredSize(new Dimension(this.getWidth(),100));
+		topPane.add(saveGameButton,SwingConstants.CENTER);
 		topPane.add(roundLabel);
 		topPane.add(playerTurnLabel);
 		
 		createBoard();
+		setUpListeners();
 		
 		this.add(topPane, BorderLayout.PAGE_START);
 		this.add(contents);
 
 		printBoard();
 		clearBackground();
-//		disablePlayerPawns(1);
+	}
+
+	/**
+	 * Method to set up the listeners for the buttons. This had to be a different method because listeners are not serializable
+	 */
+	public void setUpListeners() {
+		addWindowListener(new WindowAdapter() {
+			 @Override
+			 public void windowClosing(WindowEvent e) {
+				 new MainMenuGUI();
+				 dispose();
+			 }        
+		});
+		
+		saveGameButton.addActionListener(new ButtonHandler());
+		
+		for(int row = 0; row < boardSize; row++) {
+			for(int col = 0; col < boardSize; col++) {
+				board[col][row].addActionListener(new ButtonHandler(board,col,row));
+			}
+		}
 	}
 	
 
+	/**
+	 * Creates the TileButtons
+	 */
 	private void createBoard() {
 		//Add the tiles on the board
 		for(int row = 0; row < boardSize; row++) {
@@ -92,59 +132,11 @@ public class TableTopGUI extends JFrame {
 					board[col][row].setText("X");
 				}
 
-				board[col][row].addActionListener(new ButtonHandler(board,col,row));
-				
 				contents.add(board[col][row]);
 			}
 		}
 	}
 
-	/**
-	 * Disables the player's pawns
-	 * @param player The player whose pawns should be disabled
-	 */
-	public void disablePlayerPawns(int player) {
-		
-		/*for(Tile[] row: board) {
-			for(Tile tile: row) {
-				if(tile.isOccupied()) {
-					// Removing the action listeners of the opponent's pawns
-						if(tile.getPawn().getPlayer().getID() != player) {
-							for( ActionListener al : tile.getActionListeners() ) {
-								tile.removeActionListener(al);
-							}
-//							board[row][col].setEnabled(false);
-						}
-						else {
-//							tile.addActionListener(game.new ButtonHandler(board,tile.getPosX(),tile.getPosY()));
-							
-//								board[row][col].setEnabled(true);
-						}
-					}
-				}
-			}*/
-		
-
-		int row,col;
-		for(Pawn tilePawn : pawn) {
-			row = tilePawn.getPosX();
-			col = tilePawn.getPosY();
-			
-			if(tilePawn.getPlayer().getID() != player) {
-//				for( ActionListener al : board[row][col].getActionListeners() ) {
-//					board[row][col].removeActionListener(al);
-//				}
-				board[row][col].setEnabled(false);
-			}
-			else {
-//				board[col][row].addActionListener(game.new ButtonHandler(board,col,row));
-				
-				board[row][col].setEnabled(true);
-			}
-		}
-	
-	}
-	
 	/**
 	 * Draw the pawns on the corresponding tiles
 	 */
@@ -209,16 +201,95 @@ public class TableTopGUI extends JFrame {
 		roundLabel.setText("Round: " + (round + 1));
 	}
 	
+	/**
+	 * Method that follows the game sequence
+	 * @param x x position of the Tile pressed
+	 * @param y y position of the Tile pressed
+	 */
+	public void gameSequence(int x, int y) {
+		clearBackground();
+		
+		game.nextRound(board, x, y);
+		
+		if(board[x][y].isOccupied() && game.playerTurn()) {
+			highlightTiles(x,y);
+			board[x][y].setBackground(Color.YELLOW);
+		}
+		
+		
+		int round = game.getRound();
+		displayRound(round);
+		displayPlayer((round % 2)+1);
+		printBoard();
+		
+
+		if(rules.checkEnd(pawn, board)) {
+			JOptionPane.showMessageDialog(null, "Congratulations Player " + ((--round % 2) + 1));
+			new MainMenuGUI();
+			dispose();
+		}
+	}
+	
+	/**
+	 * Highlight the available tiles the pawn can move to
+	 */
+	private void highlightTiles(int x, int y) {
+
+		for(int i = x+1; i < board.length; i++) {
+			if(!board[i][y].isOccupied()) {
+				board[i][y].setBackground(new Color(244,164,96));
+			}
+			else {
+				break;
+			}
+		}
+		for(int i = x-1; i < board.length; i--) {
+			if(i < 0 || board[i][y].isOccupied() ) {
+				break;
+			}
+			else {
+				board[i][y].setBackground(new Color(244,164,96));
+			}
+		}
+		for(int i = y+1; i < board.length; i++) {
+			if(!board[x][i].isOccupied()) {
+				board[x][i].setBackground(new Color(244,164,96));
+			}
+			else {
+				break;
+			}
+		}
+		for(int i = y-1; i < board.length; i--) {
+			if(i < 0 || board[x][i].isOccupied() ) {
+				break;
+			}
+			else {
+				board[x][i].setBackground(new Color(244,164,96));
+			}
+		}
+	}
 	
 	/********* Button Handler class *********/
 	public class ButtonHandler implements ActionListener{
-		private TileButton[][] board;
+//		private TileButton[][] board;
 		private int x;
 		private int y;
 		
+		/**
+		 * Default constructor
+		 */
+		public ButtonHandler() {
+			
+		}
 		
+		/**
+		 * Constructor specifically for TileButton instances
+		 * @param board The 2D array of TileButtons
+		 * @param x x position of the TileButton
+		 * @param y y position of the TileButton
+		 */
 		public ButtonHandler(TileButton[][] board,int x, int y) {
-			this.board = board;
+//			this.board = board;
 			this.x = x;
 			this.y = y;
 		}
@@ -226,35 +297,34 @@ public class TableTopGUI extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {			
 			
-			
-			clearBackground();
-			
-			game.nextRound(board, x, y);
-			
-			if(board[x][y].isOccupied() && game.playerTurn()) {
-				highlightTiles();
-				board[x][y].setBackground(Color.YELLOW);
-			}
-			
-			int round = game.getRound();
-			displayRound(round);
-			displayPlayer((round % 2)+1);
-			printBoard();
-			
-//			disablePlayerPawns((round % 2)+1);
+			if(e.getSource() == saveGameButton) {saveGame();}
+			else {gameSequence(x,y);}
 
 		}
+
 		/**
-		 * Highlight the available tiles the pawn can move to
+		 * Saves the game state
 		 */
-		private void highlightTiles() {
-			for(int i = 0; i < board.length; i++) {
-				board[x][i].setBackground(new Color(244,164,96));
-				board[i][y].setBackground(new Color(244,164,96));
+		private void saveGame() {
+			try {
+				FileOutputStream file = new FileOutputStream(filename);
+				ObjectOutputStream out = new ObjectOutputStream(file);
+				
+				out.writeObject(TableTopGUI.this);
+				
+				
+				file.close();
+				out.close();
+				
+				JOptionPane.showMessageDialog(null, "Game Saved!");
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
-			
-		}
-		
+		}		
 	}
 	
 	
