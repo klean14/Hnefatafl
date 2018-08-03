@@ -11,97 +11,69 @@ public class GameLogic implements java.io.Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	/** The tile that was selected first **/
-	private TileInterface selectedTile = null;
+	TileInterface selectedTile = null;
 	/** The pawn that was on the selected tile **/
-	private Pawn selectedPawn = null;
+	Pawn selectedPawn = null;
 	
 	/** An array of pawns **/
 	private ArrayList<Pawn> pawn;
 	
 	/** The number of rounds played **/
-	private int round = 0;
+	int round = 0;
 	
-	private Rules rules = new Rules();
+	private Player[] player = new Player[2];
+	
+	public Rules rules = new Rules();
+	
+	private String gameName = new String();
+	
+	private int boardSize;
 	
 	/****************Getters and setters******************/
 	
 	public int getRound() {return round;}
 	public void setRound(int round) {this.round = round;}
 	
+	public String getGameName() {return gameName;}
+	
+	public int getBoardSize() {return boardSize;}
+	
+	public ArrayList<Pawn> getPawn() {return pawn;}
+	
+	public Player[] getPlayer() {return player;}
+	public void setPlayer(Player[] player) {this.player = player;}
+	
 	/*****************************************************/
 
 	public GameLogic(String game, boolean gui) {
+		gameName = game;
 		pawn = null;
-		Player p1 = new Player("",1);
-		Player p2 = new Player("",2);
+		player[0] = new Player("Player 1",1);
+		player[1] = new Player("Player 2",2);
 
 		switch(game) {
 		case "Hnefatafl":
-			pawn = PawnGenerator.generatePawnsHnefatafl(p1,p2);
-			if(gui)
-				new TableTopGUI(pawn,this,11,game).setVisible(true);
-			else {
-				new TableTopCMD(pawn,this,11);
-			}
+			boardSize = 11;
+			pawn = PawnGenerator.generatePawnsHnefatafl(player[0],player[1]);
 			break;
 		case "Tablut":
-			pawn = PawnGenerator.generatePawnsTablut(p1,p2);
-			if(gui)
-				new TableTopGUI(pawn,this,9,game).setVisible(true);
-			else {	
-				new TableTopCMD(pawn,this,9);
-			}
+			boardSize = 9;
+			pawn = PawnGenerator.generatePawnsTablut(player[0],player[1]);
 			break;
 		case "Tawlbawrdd":
-			pawn = PawnGenerator.generatePawnsTawlbawrdd(p1,p2);
-			if(gui)
-				new TableTopGUI(pawn,this,11,game).setVisible(true);
-			else {
-				new TableTopCMD(pawn,this,11);
-			}
-		}
-	}
-
-	/**
-	 * Check if there are any pawns between the 2 tiles
-	 * @param thisX X coordinate of old tile
-	 * @param thatX X coordinate of new tile
-	 * @param thisY Y coordinate of old tile
-	 * @param thatY Y coordinate of new tile
-	 * @return true if there are pawns between, otherwise false
-	 */
-	public boolean pawnsBetween(TileInterface[][] board, int thisX, int thatX,int thisY,int thatY) {
-		int resultX = thisX - thatX;
-		int resultY = thisY - thatY;
-		// Moves to the right
-		if(resultX < 0) {
-			for(int i = thisX+1; i < thatX; i++) {
-				if(board[i][thisY].isOccupied()) {return true;}
-			}
-		}
-		//Moves to the left
-		else if(resultX > 0) {
-			for(int i = thisX-1; i > thatX; i--) {
-				if(board[i][thisY].isOccupied()) {return true;}
-			}
-		}
-		//Moves downwards
-		else if(resultY < 0) {
-			for(int j = thisY+1; j < thatY; j++) {
-					if(board[thisX][j].isOccupied()) {return true;}
-			}
-		}
-		//Moves upwards
-		else {
-			for(int j = thisY-1; j > thatY; j--) {
-				if(board[thisX][j].isOccupied()) {return true;}
-			}
+			boardSize = 11;
+			pawn = PawnGenerator.generatePawnsTawlbawrdd(player[0],player[1]);
+			break;
 		}
 		
-		return false;
+		if(gui) {
+			new TableTopGUI(pawn,this,boardSize,game);
+		}
+		else {
+			new TableTopCMD(pawn,this,boardSize);
+		}
 	}
 
-	
 	/**
 	 * Find the Pawn object that sits on a specific tile
 	 * @param x X coordinate of the tile
@@ -133,18 +105,18 @@ public class GameLogic implements java.io.Serializable{
 			}
 			
 			//Restricted tile 
-			else if((board[x][y].isRestricted() && !selectedPawn.isKing())) {
+			else if((board[x][y].isRestricted() && !(selectedPawn instanceof KingPawn))) {
 				System.out.println("Warning! Restricted tile tried to be accessed");
 			} 
 			
 			// If there is no pawn on the tile pressed
 			else { 
 				// Check that the correct player played
-				if(playerTurn()) {
+				if(rules.playerTurn(this)) {
 					
 					// Only allowed to move in a straight line ( ^ is xor operation)
-					if(legalMove(x, y)) {
-						if(!pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
+					if(rules.legalMove(this, x, y)) {
+						if(!rules.pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
 		
 							selectedTile.setOccupied(false);
 							selectedTile.setPawn(null);
@@ -177,13 +149,6 @@ public class GameLogic implements java.io.Serializable{
 		catch(NullPointerException error) {
 			System.out.println("No pawn selected");
 		}
-	}
-	public boolean legalMove(int x, int y) {
-		return selectedTile.getPosX() == x ^ selectedTile.getPosY() == y;
-	}
-	
-	public boolean playerTurn() {
-		return (round % 2 )+ 1 == selectedPawn.getPlayer().getID();
 	}
 	
 	

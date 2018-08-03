@@ -46,7 +46,7 @@ public class Rules implements java.io.Serializable {
 						enemyPawn = game.findPawn(xPos + l, yPos + k);
 						
 						// Special case for the king
-						if(enemyPawn.isKing()) {
+						if(enemyPawn instanceof KingPawn) {
 							checkCaptureKing(enemyPawn,board,pawns);
 							break;
 						}
@@ -144,7 +144,7 @@ public class Rules implements java.io.Serializable {
 		
 		// Check if the king pawn is still in the game
 		for(Pawn pawn : pawns) {
-			if(pawn.isKing()) {
+			if(pawn instanceof KingPawn) {
 				return false;
 			}
 		}
@@ -157,6 +157,54 @@ public class Rules implements java.io.Serializable {
 		tile.setPawn(null);
 		tile.setOccupied(false);
 		pawns.remove(enemyPawn);
+	}
+
+	public boolean legalMove(GameLogic gameLogic, int x, int y) {
+		return gameLogic.selectedTile.getPosX() == x ^ gameLogic.selectedTile.getPosY() == y;
+	}
+
+	public boolean playerTurn(GameLogic gameLogic) {
+		return (gameLogic.round % 2 )+ 1 == gameLogic.selectedPawn.getPlayer().getID();
+	}
+
+	/**
+	 * Check if there are any pawns between the 2 tiles
+	 * @param board TODO
+	 * @param thisX X coordinate of old tile
+	 * @param thatX X coordinate of new tile
+	 * @param thisY Y coordinate of old tile
+	 * @param thatY Y coordinate of new tile
+	 * @return true if there are pawns between, otherwise false
+	 */
+	public boolean pawnsBetween(TileInterface[][] board, int thisX, int thatX, int thisY, int thatY) {
+		int resultX = thisX - thatX;
+		int resultY = thisY - thatY;
+		// Moves to the right
+		if(resultX < 0) {
+			for(int i = thisX+1; i < thatX; i++) {
+				if(board[i][thisY].isOccupied()) {return true;}
+			}
+		}
+		//Moves to the left
+		else if(resultX > 0) {
+			for(int i = thisX-1; i > thatX; i--) {
+				if(board[i][thisY].isOccupied()) {return true;}
+			}
+		}
+		//Moves downwards
+		else if(resultY < 0) {
+			for(int j = thisY+1; j < thatY; j++) {
+					if(board[thisX][j].isOccupied()) {return true;}
+			}
+		}
+		//Moves upwards
+		else {
+			for(int j = thisY-1; j > thatY; j--) {
+				if(board[thisX][j].isOccupied()) {return true;}
+			}
+		}
+		
+		return false;
 	}
 
 }
