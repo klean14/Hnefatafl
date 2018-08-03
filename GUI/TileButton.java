@@ -5,6 +5,10 @@ import Core.Pawn;
 import Core.TileInterface;
 
 public class TileButton extends JButton implements TileInterface{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int posX;
 	private int posY;
 	private boolean occupied = false;
