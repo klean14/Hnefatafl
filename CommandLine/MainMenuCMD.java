@@ -11,17 +11,16 @@ import Core.GameLogic;
 
 public class MainMenuCMD {
 	
-	private static String filename = "save_game.ser";
-	
 	public MainMenuCMD() {
-		System.out.println("Input a number to start playing or quit");
-		System.out.println("1. Hnefatafl" 	+ System.lineSeparator()
+		
+		
+		while(true) {
+			System.out.println("Input a number to start playing or quit");
+			System.out.println("1. Hnefatafl" 	+ System.lineSeparator()
 						 + "2. Tablut" 		+ System.lineSeparator()
 						 + "3. Tawlbawrdd" 	+ System.lineSeparator()
 						 + "4. Load Game"	+ System.lineSeparator()
 						 + "5. Quit");	
-		
-		while(true) {
 			Scanner reader = new Scanner(System.in);
 			int userInput = 0;
 			
@@ -43,15 +42,22 @@ public class MainMenuCMD {
 				new GameLogic("Tawlbawrdd",false);
 				break;
 			case 4:
-				TableTopCMD tt = null;
+				
+				// Skip the newline
+				reader.nextLine();
+				System.out.println("Specify the name of the file: ");
+				
+				String filename = "saves/"+ reader.nextLine() +".ser";
+				
+				GameLogic gl = null;
 				
 				try {
 
 					FileInputStream file = new FileInputStream(filename);
 					ObjectInputStream in = new ObjectInputStream(file);
 					
-					tt = (TableTopCMD)in.readObject();
-					tt.gameSequence();
+					gl = (GameLogic)in.readObject();
+					new TableTopCMD(gl.getPawn(),gl,gl.getBoardSize());
 					
 					file.close();
 					in.close();
@@ -59,12 +65,14 @@ public class MainMenuCMD {
 					// TODO Auto-generated catch block
 					System.out.println("No game saved found");
 //					e.printStackTrace();
-				} catch (ClassNotFoundException e) {
+				} 
+				catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 
 //					e.printStackTrace();
-				} catch (IOException e) {
-
+				} 
+				catch (IOException e) {
+//
 					// TODO Auto-generated catch block
 //					e.printStackTrace();
 				}

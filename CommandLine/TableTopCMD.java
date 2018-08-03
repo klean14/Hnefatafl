@@ -8,15 +8,12 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import Core.GameLogic;
+import Core.KingPawn;
 import Core.Pawn;
 import Core.Rules;
+import Core.TableTop;
 
-public class TableTopCMD implements java.io.Serializable{
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class TableTopCMD implements TableTop {
 
 	private TileCLI[][] board;
 	
@@ -25,8 +22,6 @@ public class TableTopCMD implements java.io.Serializable{
 	private GameLogic game;
 	
 	private Rules rules = new Rules();
-	
-	private static String filename = "save_game.ser";
 	
 	private ArrayList<Pawn> pawn;
 	
@@ -58,7 +53,7 @@ public class TableTopCMD implements java.io.Serializable{
 				System.out.println("Round: " + round);
 				System.out.println("Player " + ((round % 2)+1) + " plays");
 				
-				printBoard(boardSize);
+				printBoard();
 				
 				
 				if(rules.checkEnd(pawn, board)) {
@@ -97,27 +92,35 @@ public class TableTopCMD implements java.io.Serializable{
 			} 
 			catch (NullPointerException e) {
 				System.out.println("No pawn found");
+//				e.printStackTrace();
 			}
 			catch (ArrayIndexOutOfBoundsException e1) {
 				System.out.println("Wrong input. Add the old AND new position of the pawn.");
 			}
-//			catch (NumberFormatException e1) {
-//				System.out.println("Wrong input. Type first a letter and second a number.");
-//			}
+			catch (NumberFormatException e1) {
+				System.out.println("Wrong input. Type first a letter and second a number.");
+			}
 		}
 	}
 
 	/**
 	 * Saves the game state
 	 */
-	private void saveGame() {
+	public void saveGame() {
 		FileOutputStream file = null;
 		ObjectOutputStream out = null;
+		String filename = new String();
+		
+		System.out.println("Specify the name of the file:");
+		Scanner input = new Scanner(System.in);
+		
 		try {
+			
+			filename = "saves/" + input.nextLine() + ".ser";
 			file = new FileOutputStream(filename);
 			out = new ObjectOutputStream(file);
 			
-			out.writeObject(this);
+			out.writeObject(game);
 			System.out.println("Game saved..");
 			
 			file.close();
@@ -125,18 +128,18 @@ public class TableTopCMD implements java.io.Serializable{
 		} 
 		catch (FileNotFoundException e) {
 
-//			e.printStackTrace();
+			e.printStackTrace();
 		} 
 		catch (IOException e) {
 
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
 	/**
 	 * Instantiate the tiles and set the restricted ones
 	 */
-	private void createBoard() {
+	public void createBoard() {
 		
 		for(int row = 0; row < boardSize; row++) {
 			for(int col = 0; col < boardSize; col++) {
@@ -155,13 +158,13 @@ public class TableTopCMD implements java.io.Serializable{
 	 * Method to print out the board in a command line
 	 * @param size is the size of the board
 	 */
-	private void printBoard(int size) {
+	public void printBoard() {
 		
 		String boardString = new String();
 		
 		
 		boardString += "  ";
-		for(int i = 1; i <= size; i++) 
+		for(int i = 1; i <= boardSize; i++) 
 		{
 			boardString += "  ";
 			boardString += i;
@@ -171,17 +174,17 @@ public class TableTopCMD implements java.io.Serializable{
 		boardString += System.lineSeparator();
 		boardString += "  ";
 		
-		for(int i = 0; i <= size*4; i++) 
+		for(int i = 0; i <= boardSize*4; i++) 
 		{
 			boardString += "-";
 		}
 		
 		boardString += System.lineSeparator();
 		
-		for(int row = 0; row < size; row ++) {
+		for(int row = 0; row < boardSize; row ++) {
 			// Print out the characters of the alphabet
 			boardString += Character.toString ((char) (row + 97));;
-			for(int col = 0; col <= size; col++) {
+			for(int col = 0; col <= boardSize; col++) {
 				boardString += " | ";
 				
 				// Check if there is a pawn in this position of the board
@@ -189,7 +192,7 @@ public class TableTopCMD implements java.io.Serializable{
 					if(tilePawn != null) {
 						board[col][row].setPawn(tilePawn);
 						board[col][row].setOccupied(true);
-						if(tilePawn.isKing()) {
+						if(tilePawn instanceof KingPawn) {
 							boardString += "k";
 						}
 						else if(tilePawn.getPlayer().getID() == 1) {
@@ -221,7 +224,7 @@ public class TableTopCMD implements java.io.Serializable{
 			boardString += System.lineSeparator();
 		}
 		boardString += "  ";
-		for(int i = 0; i <= size*4; i++) 
+		for(int i = 0; i <= boardSize*4; i++) 
 		{
 			boardString += "-";
 		}
