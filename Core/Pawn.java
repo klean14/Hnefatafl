@@ -1,5 +1,4 @@
 package Core;
-import java.awt.Image;
 
 public class Pawn implements java.io.Serializable{
 	/**
@@ -9,8 +8,6 @@ public class Pawn implements java.io.Serializable{
 	private int posX;
 	private int posY;
 	private Player player;
-	private Image pawn;
-	private boolean king = false;
 	
 		
 	public Pawn(int posX, int posY, Player player) {
@@ -28,9 +25,6 @@ public class Pawn implements java.io.Serializable{
 	public void setPosY(int posY) {this.posY = posY;}
 	
 	public Player getPlayer() {return player;}
-	
-	public boolean isKing() {return king;}
-	public void setKing(boolean king) {this.king = king;}
 
 	
 	/*****************************************************/
