@@ -1,5 +1,7 @@
 package Core;
 
+import javax.swing.ImageIcon;
+
 public class Player implements java.io.Serializable {
 	/**
 	 * 
@@ -7,6 +9,7 @@ public class Player implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
+	private ImageIcon playerImage = new ImageIcon("res/people.png");
 	
 	//1 -> Player 1 / 2 Player 2
 	private int ID;
@@ -22,6 +25,9 @@ public class Player implements java.io.Serializable {
 
 	public void setName(String name) {this.name = name;}
 	public String getName() {return name;}
+
+	public ImageIcon getPlayerImage() {return playerImage;}
+	public void setPlayerImage(ImageIcon playerImage) {this.playerImage = playerImage;}
 
 	/*****************************************************/
 	
