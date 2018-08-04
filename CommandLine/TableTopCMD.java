@@ -10,6 +10,7 @@ import java.util.Scanner;
 import Core.GameLogic;
 import Core.KingPawn;
 import Core.Pawn;
+import Core.Player;
 import Core.Rules;
 import Core.TableTop;
 
@@ -25,6 +26,7 @@ public class TableTopCMD implements TableTop {
 	
 	private ArrayList<Pawn> pawn;
 	
+	private Player[] player;
 	/**
 	 * Default constructor
 	 * @param pawns the arraylist of pawns
@@ -37,6 +39,7 @@ public class TableTopCMD implements TableTop {
 		this.boardSize = size;
 		this.board = new TileCLI[size][size];
 		this.pawn = pawns;
+		this.player = game.getPlayer();
 		
 		gameSequence();
 	}
@@ -51,7 +54,7 @@ public class TableTopCMD implements TableTop {
 			int round = game.getRound();
 			try {
 				System.out.println("Round: " + round);
-				System.out.println("Player " + ((round % 2)+1) + " plays");
+				System.out.println(player[(round % 2)].getName() + " plays");
 				
 				printBoard();
 				
