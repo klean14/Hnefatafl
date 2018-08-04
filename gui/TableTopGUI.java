@@ -3,6 +3,7 @@ package GUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -27,6 +28,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -45,8 +47,14 @@ public class TableTopGUI extends JFrame implements TableTop {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	private JPanel contents,topPane,player1Panel,player2Panel;
+	
+	private ImageIcon kPawn;
+	private ImageIcon wPawn;
+	private ImageIcon bPawn;
+	private JPanel topPane,player1Panel,player2Panel;
+	LineBorder lb = new LineBorder(Color.GRAY);
+	
+	private ImagePanel contents;
 	
 	private JLabel roundLabel, playerTurnLabel,p1Image,p1Name,p2Image,p2Name;
 	
@@ -83,6 +91,11 @@ public class TableTopGUI extends JFrame implements TableTop {
 		//Show the grid in the center of the screen
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
+		
+		// ImageIcons
+		kPawn = new ImageIcon("res/kPawn.png");
+		wPawn = new ImageIcon("res/wPawn.png");
+		bPawn = new ImageIcon("res/bPawn.png");
 		
 		// Menu Bar
 		menuBar = new JMenuBar();
@@ -133,7 +146,10 @@ public class TableTopGUI extends JFrame implements TableTop {
 		
 		// JLabels
 		roundLabel = new JLabel("Round: 1", SwingConstants.CENTER);
+		roundLabel.setFont(new Font("Rockwell",Font.PLAIN,14));
 		playerTurnLabel = new JLabel("Player 1 plays", SwingConstants.CENTER);
+		playerTurnLabel.setFont(new Font("Rockwell",Font.BOLD,14));
+		
 		p1Image = new JLabel();
 		p2Image = new JLabel();
 		
@@ -141,12 +157,16 @@ public class TableTopGUI extends JFrame implements TableTop {
 		p2Image.setIcon(player[1].getPlayerImage());
 		
 		p1Name = new JLabel(player[0].getName());
+		p1Name.setFont(new Font("Rockwell",Font.PLAIN,12));
 		p2Name = new JLabel(player[1].getName());
+		p2Name.setFont(new Font("Rockwell",Font.PLAIN,12));
 		
 		// JPanels
-		contents = new JPanel(new GridLayout(boardSize,boardSize));
+		contents = new ImagePanel();
+		contents.setLayout(new GridLayout(boardSize,boardSize));
 		player1Panel = new JPanel();
 		player2Panel = new JPanel();
+		
 		
 		player1Panel.setLayout(new BoxLayout(player1Panel, BoxLayout.PAGE_AXIS));
 		player2Panel.setLayout(new BoxLayout(player2Panel, BoxLayout.PAGE_AXIS));
@@ -164,7 +184,6 @@ public class TableTopGUI extends JFrame implements TableTop {
 		topPane.add(player2Panel,BorderLayout.EAST);
 		topPane.add(roundLabel,BorderLayout.NORTH);
 		topPane.add(playerTurnLabel,BorderLayout.CENTER);
-//		topPane.add(p2Image,BorderLayout.EAST);
 		
 		createBoard();
 		setUpListeners();
@@ -200,7 +219,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 			for(int col = 0; col < boardSize; col++) {
 				board[col][row] = new TileButton(col,row);
 				board[col][row].setLayout(new BorderLayout());
-				
+
 				//The tiles that are restricted to the pawns except for the king
 				// Temporary solution for the restricted to be the corners and the center of the board. not always the case
 				if(row == 0 && col == 0 || row == boardSize-1 && col == 0 || row == 0 && col == boardSize-1 || row == boardSize-1 && col == boardSize-1 || row == (boardSize-1)/2 && col == (boardSize-1)/2) {
@@ -227,28 +246,29 @@ public class TableTopGUI extends JFrame implements TableTop {
 					tile.setPawn(tilePawn);
 					tile.setOccupied(true);
 					
-					if(tilePawn instanceof KingPawn)
-						tile.setText("K");
-					else
-						tile.setText("o");
-					
-					
-					if((tilePawn.getPlayer().getID() == 2)) {
-						tile.setForeground(Color.WHITE);
+					if(tilePawn instanceof KingPawn) {
+						tile.setText("");
+						tile.setIcon(kPawn);
+					}
+					else if((tilePawn.getPlayer().getID() == 2)) {
+						tile.setIcon(wPawn);
 					}
 					else {
-						tile.setForeground(Color.BLACK);
+						tile.setIcon(bPawn);
 					}
+					
 				}
 				else if(!tile.isRestricted()){
 					tile.setPawn(null);
 					tile.setOccupied(false);
 					tile.setText("");
+					tile.setIcon(null);
 					tile.setEnabled(true);
 				}
 				else if(tile.isRestricted()) {
 					tile.setPawn(null);
 					tile.setOccupied(false);
+					tile.setIcon(null);
 					tile.setText("X");
 					tile.setEnabled(true);
 				}
@@ -260,9 +280,14 @@ public class TableTopGUI extends JFrame implements TableTop {
 	 * Set the background color of the tiles 
 	 */
 	public void clearBackground() {
+		
 		for(int row = 0; row < boardSize; row++) {
 			for(int col = 0; col < boardSize; col++) {
-				board[col][row].setBackground(new Color(219,139,71));
+				board[col][row].setOpaque(false);
+				board[col][row].setContentAreaFilled(false);
+				board[col][row].setBorder(lb);
+				
+//				board[col][row].setBackground(new Color(219,139,71));
 			}
 		}
 	}
@@ -301,7 +326,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		
 		if(board[x][y].isOccupied() && game.rules.playerTurn(game)) {
 			highlightTiles(x,y);
-			board[x][y].setBackground(Color.YELLOW);
+			board[x][y].setBorder(new LineBorder(Color.YELLOW));
 		}
 		
 		
@@ -322,11 +347,16 @@ public class TableTopGUI extends JFrame implements TableTop {
 	 * Highlight the available tiles the pawn can move to in all cardinal directions until it finds another pawn
 	 */
 	private void highlightTiles(int x, int y) {
-
+		Color c=new Color(244,164,110,100);
 		
 		for(int i = x+1; i < board.length; i++) {
 			if(!board[i][y].isOccupied()) {
-				board[i][y].setBackground(new Color(244,164,96));
+//				board[i][y].setBackground(new Color(244,164,96));
+//				board[i][y].setBorder(new LineBorder(Color.WHITE));
+
+//				board[i][y].setOpaque(true);
+				board[i][y].setContentAreaFilled(true);
+				board[i][y].setBackground(c);
 			}
 			else {
 				break;
@@ -337,12 +367,20 @@ public class TableTopGUI extends JFrame implements TableTop {
 				break;
 			}
 			else {
-				board[i][y].setBackground(new Color(244,164,96));
+//				board[i][y].setBackground(new Color(244,164,96));
+//				board[i][y].setBorder(new LineBorder(Color.WHITE));
+
+				board[i][y].setContentAreaFilled(true);
+				board[i][y].setBackground(c);
 			}
 		}
 		for(int i = y+1; i < board.length; i++) {
 			if(!board[x][i].isOccupied()) {
-				board[x][i].setBackground(new Color(244,164,96));
+//				board[x][i].setBackground(new Color(244,164,96));
+//				board[x][i].setBorder(new LineBorder(Color.WHITE));
+
+				board[x][i].setContentAreaFilled(true);
+				board[x][i].setBackground(c);
 			}
 			else {
 				break;
@@ -353,7 +391,11 @@ public class TableTopGUI extends JFrame implements TableTop {
 				break;
 			}
 			else {
-				board[x][i].setBackground(new Color(244,164,96));
+//				board[x][i].setBackground(new Color(244,164,96));
+//				board[x][i].setBorder(new LineBorder(Color.WHITE));
+
+				board[x][i].setContentAreaFilled(true);
+				board[x][i].setBackground(c);
 			}
 		}
 	}
@@ -409,8 +451,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 			}
 			else if(e.getSource() == editPlayers) {
 				new EditPlayers(player[0],player[1],p1Image,p2Image,p1Name,p2Name);
-				TableTopGUI.this.revalidate();
-				TableTopGUI.this.repaint();
+//				TableTopGUI.this.revalidate();
+//				TableTopGUI.this.repaint();
 			}
 			
 		}
