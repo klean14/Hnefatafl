@@ -219,7 +219,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 			for(int col = 0; col < boardSize; col++) {
 				board[col][row] = new TileButton(col,row);
 				board[col][row].setLayout(new BorderLayout());
-
+				board[col][row].setRolloverEnabled(false);
 				//The tiles that are restricted to the pawns except for the king
 				// Temporary solution for the restricted to be the corners and the center of the board. not always the case
 				if(row == 0 && col == 0 || row == boardSize-1 && col == 0 || row == 0 && col == boardSize-1 || row == boardSize-1 && col == boardSize-1 || row == (boardSize-1)/2 && col == (boardSize-1)/2) {
@@ -286,8 +286,6 @@ public class TableTopGUI extends JFrame implements TableTop {
 				board[col][row].setOpaque(false);
 				board[col][row].setContentAreaFilled(false);
 				board[col][row].setBorder(lb);
-				
-//				board[col][row].setBackground(new Color(219,139,71));
 			}
 		}
 	}
@@ -347,7 +345,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 	 * Highlight the available tiles the pawn can move to in all cardinal directions until it finds another pawn
 	 */
 	private void highlightTiles(int x, int y) {
-		Color c=new Color(244,164,110,100);
+		Color c=new Color(210,105,30,100);
 		
 		for(int i = x+1; i < board.length; i++) {
 			if(!board[i][y].isOccupied()) {
