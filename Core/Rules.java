@@ -159,12 +159,26 @@ public class Rules implements java.io.Serializable {
 		pawns.remove(enemyPawn);
 	}
 
-	public boolean legalMove(GameLogic gameLogic, int x, int y) {
-		return gameLogic.selectedTile.getPosX() == x ^ gameLogic.selectedTile.getPosY() == y;
+	/**
+	 * If the destination is within the cardinal directions of the origin  ( ^ is xor operation)
+	 * @param destinationX The destination X position
+	 * @param destinationY The destination Y position
+	 * @param originX The origin X position
+	 * @param originY The origin Y position
+	 * @return True if the move is legal
+	 */
+	public boolean legalMove(int destinationX, int destinationY, int originX, int originY) {
+		return (destinationX == originX ^ destinationY == originY);
 	}
 
-	public boolean playerTurn(GameLogic gameLogic) {
-		return (gameLogic.round % 2 )+ 1 == gameLogic.selectedPawn.getPlayer().getID();
+	/**
+	 * Check if the pawn selected is of the current player's turn
+	 * @param round Number of rounds passed
+	 * @param playerID The pawn's player id that belongs to
+	 * @return true if the selected pawn belongs to the player
+	 */
+	public boolean playerTurn(int round, int playerID) {
+		return (round % 2 ) + 1 == playerID;
 	}
 
 	/**

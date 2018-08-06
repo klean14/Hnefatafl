@@ -11,15 +11,15 @@ public class GameLogic implements java.io.Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	/** The tile that was selected first **/
-	TileInterface selectedTile = null;
+	private TileInterface selectedTile = null;
 	/** The pawn that was on the selected tile **/
-	Pawn selectedPawn = null;
+	private Pawn selectedPawn = null;
 	
 	/** An array of pawns **/
 	private ArrayList<Pawn> pawn;
 	
 	/** The number of rounds played **/
-	int round = 0;
+	private int round = 0;
 	
 	private Player[] player = new Player[2];
 	
@@ -42,6 +42,8 @@ public class GameLogic implements java.io.Serializable{
 	
 	public Player[] getPlayer() {return player;}
 	public void setPlayer(Player[] player) {this.player = player;}
+	
+	public Pawn getSelectedPawn() {return selectedPawn;}
 	
 	/*****************************************************/
 
@@ -112,10 +114,10 @@ public class GameLogic implements java.io.Serializable{
 			// If there is no pawn on the tile pressed
 			else { 
 				// Check that the correct player played
-				if(rules.playerTurn(this)) {
+				if(rules.playerTurn(round,selectedPawn.getPlayer().getID())) {
 					
-					// Only allowed to move in a straight line ( ^ is xor operation)
-					if(rules.legalMove(this, x, y)) {
+					// Only allowed to move in a straight line
+					if(rules.legalMove(selectedTile.getPosX(),selectedTile.getPosY(), x, y)) {
 						if(!rules.pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
 		
 							selectedTile.setOccupied(false);
