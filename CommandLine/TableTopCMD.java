@@ -131,11 +131,11 @@ public class TableTopCMD implements TableTop {
 		} 
 		catch (FileNotFoundException e) {
 
-			e.printStackTrace();
+//			e.printStackTrace();
 		} 
 		catch (IOException e) {
 
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 	}
 
@@ -159,7 +159,6 @@ public class TableTopCMD implements TableTop {
 	
 	/**
 	 * Method to print out the board in a command line
-	 * @param size is the size of the board
 	 */
 	public void printBoard() {
 		
