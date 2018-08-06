@@ -321,14 +321,14 @@ public class TableTopGUI extends JFrame implements TableTop {
 		clearBackground();
 		
 		game.nextRound(board, x, y);
-		
-		if(board[x][y].isOccupied() && game.rules.playerTurn(game)) {
+
+		int round = game.getRound();
+		if(board[x][y].isOccupied() && game.rules.playerTurn(round,game.getSelectedPawn().getPlayer().getID())) {
 			highlightTiles(x,y);
 			board[x][y].setBorder(new LineBorder(Color.YELLOW));
 		}
 		
 		
-		int round = game.getRound();
 		displayRound(round);
 		displayPlayer((round % 2)+1);
 		printBoard();
