@@ -10,6 +10,7 @@ import java.util.Scanner;
 import Core.GameLogic;
 import Core.KingPawn;
 import Core.Pawn;
+import Core.PawnGenerator;
 import Core.Player;
 import Core.Rules;
 import Core.TableTop;
@@ -21,8 +22,6 @@ public class TableTopCMD implements TableTop {
 	private int boardSize;
 	
 	private GameLogic game;
-	
-	private Rules rules = new Rules();
 	
 	private ArrayList<Pawn> pawn;
 	
@@ -51,7 +50,7 @@ public class TableTopCMD implements TableTop {
 		createBoard();
 		
 		while(true) {
-			int round = game.getRound();
+			int round = GameLogic.getRound();
 			try {
 				System.out.println("Round: " + round);
 				System.out.println(player[(round % 2)].getName() + " plays");
@@ -59,12 +58,12 @@ public class TableTopCMD implements TableTop {
 				printBoard();
 				
 				
-				if(rules.checkEnd(pawn, board)) {
+				if(Rules.checkEnd(pawn, board)) {
 					System.out.println("Congratulations Player " + ((--round % 2) + 1));
 					new MainMenuCMD();
 				}
 				
-				System.out.println("Input <yx> <yx> of the old and new position of the pawn respectively, separated by as space or type \"exit\" to exit. You can also save the game by typing \"save\": ");
+				System.out.println("Input <yx> <yx> of the old and new position of the pawn respectively, separated by a space or type \"help\" for extra commands: ");
 				// Read user input
 				Scanner reader = new Scanner(System.in);
 				String userInput = reader.nextLine();
@@ -74,6 +73,18 @@ public class TableTopCMD implements TableTop {
 				}
 				else if(userInput.equals("save")) {
 					saveGame();
+				}
+				else if(userInput.equals("undo")) {
+					if(PawnGenerator.getUndoManager().canUndo())
+						PawnGenerator.getUndoManager().undo();
+				}
+				else if(userInput.equals("help")) {
+					System.out.println("=========" + System.lineSeparator()
+										 + "Commands " + System.lineSeparator()
+										 + "=========" + System.lineSeparator()
+										 + " \"exit\" to exit" + System.lineSeparator()
+										 + " \"save\" to save the game "  + System.lineSeparator()
+										 + " \"undo\" to undo the previous move");
 				}
 				else {
 					// Split into 2 Strings

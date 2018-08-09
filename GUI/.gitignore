@@ -12,3 +12,6 @@
 /TableTopGUI$2.class
 /ImagePanel.class
 /ImagePanel$1.class
+/TileButton$SimpleUEListener.class
+/TableTopGUI$SimpleUEListener.class
+/TileButton$UndoableToggleEdit.class

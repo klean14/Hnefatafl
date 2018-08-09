@@ -29,13 +29,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.undo.UndoManager;
 
 import Core.GameLogic;
 import Core.KingPawn;
 import Core.Pawn;
+import Core.PawnGenerator;
 import Core.Player;
 import Core.Rules;
 import Core.TableTop;
@@ -52,7 +52,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 	private ImageIcon wPawn;
 	private ImageIcon bPawn;
 	private JPanel topPane,player1Panel,player2Panel;
-	LineBorder lb = new LineBorder(Color.GRAY);
+	private LineBorder lb = new LineBorder(Color.GRAY);
 	
 	private ImagePanel contents;
 	
@@ -66,13 +66,13 @@ public class TableTopGUI extends JFrame implements TableTop {
 	
 	private GameLogic game;
 	
-	private Rules rules = new Rules();
-	
 	private Player[] player;
 	
 	private JMenuBar menuBar;
 	private JMenu fileMenu,newGame,editMenu;
-	private JMenuItem saveItem,loadItem,quitItem,hnefataflItem,tablutItem,tawlbawrddItem,editPlayers;
+	private JMenuItem saveItem,loadItem,quitItem,hnefataflItem,tablutItem,tawlbawrddItem,editPlayers,undoItem;
+
+	private final UndoManager undoManager;
 	
 	public TableTopGUI(ArrayList<Pawn> pawns,GameLogic game, int size, String title) {
 
@@ -81,7 +81,22 @@ public class TableTopGUI extends JFrame implements TableTop {
 		this.board = new TileButton[size][size];
 		this.pawn = pawns;
 		this.player = game.getPlayer();
+		this.undoManager = PawnGenerator.getUndoManager();
 		
+		setup(title);
+		
+		createBoard();
+		setUpListeners();
+		
+		this.add(topPane, BorderLayout.PAGE_START);
+		this.add(contents);
+
+		printBoard();
+		clearBackground();
+		updateUndoRedo();
+	}
+
+	private void setup(String title) {
 		this.setTitle(title);
 		this.setSize(800, 800);
 		this.setResizable(false);
@@ -112,7 +127,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 		saveItem = new JMenuItem("Save", new ImageIcon("res/save.png"));
 		loadItem = new JMenuItem("Load", new ImageIcon("res/load.png"));
 		quitItem = new JMenuItem("Quit");
-		editPlayers = new JMenuItem("Edit Players");
+		editPlayers = new JMenuItem("Players", new ImageIcon("res/profile.png"));
+		undoItem = new JMenuItem("Undo", new ImageIcon("res/undo.png"));
 		
 		// Listeners
 		saveItem.addActionListener(new MenuHandler());
@@ -122,9 +138,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		tawlbawrddItem.addActionListener(new MenuHandler());
 		quitItem.addActionListener(new MenuHandler());
 		editPlayers.addActionListener(new MenuHandler());
-		
-//		newGame.addMenuListener(new MenuHandler());
-//		fileMenu.addMenuListener(new MenuHandler());
+		undoItem.addActionListener(new MenuHandler());
 		
 		// Add to the menu
 		fileMenu.add(newGame);
@@ -138,6 +152,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 		newGame.add(tawlbawrddItem);
 		
 		editMenu.add(editPlayers);
+		editMenu.addSeparator();
+		editMenu.add(undoItem);
 		
 		menuBar.add(fileMenu);
 		menuBar.add(editMenu);
@@ -164,6 +180,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		// JPanels
 		contents = new ImagePanel();
 		contents.setLayout(new GridLayout(boardSize,boardSize));
+		
 		player1Panel = new JPanel();
 		player2Panel = new JPanel();
 		
@@ -184,27 +201,15 @@ public class TableTopGUI extends JFrame implements TableTop {
 		topPane.add(player2Panel,BorderLayout.EAST);
 		topPane.add(roundLabel,BorderLayout.NORTH);
 		topPane.add(playerTurnLabel,BorderLayout.CENTER);
-		
-		createBoard();
-		setUpListeners();
-		
-		this.add(topPane, BorderLayout.PAGE_START);
-		this.add(contents);
-
-		printBoard();
-		clearBackground();
 	}
 
 	/**
 	 * Method to set up the listeners for the buttons. This had to be a different method because listeners are not serializable
 	 */
 	public void setUpListeners() {
-		
-//		saveGameButton.addActionListener(new ButtonHandler());
-		
 		for(int row = 0; row < boardSize; row++) {
 			for(int col = 0; col < boardSize; col++) {
-				board[col][row].addActionListener(new ButtonHandler(board,col,row,this));
+				board[col][row].addActionListener(new ButtonHandler(col,row,this));
 			}
 		}
 	}
@@ -220,6 +225,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 				board[col][row] = new TileButton(col,row);
 				board[col][row].setLayout(new BorderLayout());
 				board[col][row].setRolloverEnabled(false);
+				
 				//The tiles that are restricted to the pawns except for the king
 				// Temporary solution for the restricted to be the corners and the center of the board. not always the case
 				if(row == 0 && col == 0 || row == boardSize-1 && col == 0 || row == 0 && col == boardSize-1 || row == boardSize-1 && col == boardSize-1 || row == (boardSize-1)/2 && col == (boardSize-1)/2) {
@@ -236,6 +242,11 @@ public class TableTopGUI extends JFrame implements TableTop {
 	 * Draw the pawns on the corresponding tiles
 	 */
 	public void printBoard() {
+
+		// Update the round and player labels
+		displayRound(GameLogic.getRound());
+		displayPlayer((GameLogic.getRound() % 2)+1);
+		
 		for(TileButton[] tileRow : board) {
 			for(TileButton tile : tileRow) {
 				int row = tile.getPosX();
@@ -321,21 +332,17 @@ public class TableTopGUI extends JFrame implements TableTop {
 		clearBackground();
 		
 		game.nextRound(board, x, y);
-
-		int round = game.getRound();
-		if(board[x][y].isOccupied() && game.rules.playerTurn(round,game.getSelectedPawn().getPlayer().getID())) {
+		updateUndoRedo();
+		int round = GameLogic.getRound();
+		if(board[x][y].isOccupied() && Rules.playerTurn(round,game.getSelectedPawn().getPlayer().getID())) {
 			highlightTiles(x,y);
 			board[x][y].setBorder(new LineBorder(Color.YELLOW));
 		}
 		
-		
-		displayRound(round);
-		displayPlayer((round % 2)+1);
 		printBoard();
 		
-
-		if(rules.checkEnd(pawn, board)) {
-			JOptionPane.showMessageDialog(null, "Congratulations Player " + ((--round % 2) + 1));
+		if(Rules.checkEnd(pawn, board)) {
+			JOptionPane.showMessageDialog(null, "Congratulations " + player[((--round % 2) + 1)].getName());
 			contents.removeAll();
 		}
 	}
@@ -349,10 +356,6 @@ public class TableTopGUI extends JFrame implements TableTop {
 		
 		for(int i = x+1; i < board.length; i++) {
 			if(!board[i][y].isOccupied()) {
-//				board[i][y].setBackground(new Color(244,164,96));
-//				board[i][y].setBorder(new LineBorder(Color.WHITE));
-
-//				board[i][y].setOpaque(true);
 				board[i][y].setContentAreaFilled(true);
 				board[i][y].setBackground(c);
 			}
@@ -365,18 +368,12 @@ public class TableTopGUI extends JFrame implements TableTop {
 				break;
 			}
 			else {
-//				board[i][y].setBackground(new Color(244,164,96));
-//				board[i][y].setBorder(new LineBorder(Color.WHITE));
-
 				board[i][y].setContentAreaFilled(true);
 				board[i][y].setBackground(c);
 			}
 		}
 		for(int i = y+1; i < board.length; i++) {
 			if(!board[x][i].isOccupied()) {
-//				board[x][i].setBackground(new Color(244,164,96));
-//				board[x][i].setBorder(new LineBorder(Color.WHITE));
-
 				board[x][i].setContentAreaFilled(true);
 				board[x][i].setBackground(c);
 			}
@@ -389,9 +386,6 @@ public class TableTopGUI extends JFrame implements TableTop {
 				break;
 			}
 			else {
-//				board[x][i].setBackground(new Color(244,164,96));
-//				board[x][i].setBorder(new LineBorder(Color.WHITE));
-
 				board[x][i].setContentAreaFilled(true);
 				board[x][i].setBackground(c);
 			}
@@ -399,30 +393,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 	}
 
 
-
-
-	
-	public class MenuHandler implements MenuListener, ActionListener{
+	private class MenuHandler implements  ActionListener{
 		
-		
-		@Override
-		public void menuSelected(MenuEvent e) {
-			
-			
-		}
-
-	
-		@Override
-		public void menuDeselected(MenuEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void menuCanceled(MenuEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -449,13 +421,16 @@ public class TableTopGUI extends JFrame implements TableTop {
 			}
 			else if(e.getSource() == editPlayers) {
 				new EditPlayers(player[0],player[1],p1Image,p2Image,p1Name,p2Name);
-//				TableTopGUI.this.revalidate();
-//				TableTopGUI.this.repaint();
 			}
-			
+			else if(e.getSource() == undoItem) {
+				
+				if(undoManager.canUndo()) {
+					undoManager.undo();
+					updateUndoRedo();
+				}
+			}
+			printBoard();
 		}
-		
-
 	}
 
 	/**
@@ -481,7 +456,6 @@ public class TableTopGUI extends JFrame implements TableTop {
 				ObjectOutputStream out = new ObjectOutputStream(file);
 				
 				out.writeObject(game);
-				
 				
 				file.close();
 				out.close();
@@ -533,10 +507,15 @@ public class TableTopGUI extends JFrame implements TableTop {
 			} catch (IOException e1) {
 				JOptionPane.showMessageDialog(null, "There was an error with the file", "File Error", JOptionPane.ERROR_MESSAGE);
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 	//			e.printStackTrace();
 			}
 		}
 	}
-
+	
+	/**
+	 * Updates the MenuItem based on if there is a move to be undone or not
+	 */
+	private void updateUndoRedo() {
+		undoItem.setEnabled(undoManager.canUndo());
+	}
 }

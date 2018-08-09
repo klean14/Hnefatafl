@@ -19,20 +19,19 @@ public class GameLogic implements java.io.Serializable{
 	private ArrayList<Pawn> pawn;
 	
 	/** The number of rounds played **/
-	private int round = 0;
+	private static int round = 0;
 	
 	private Player[] player = new Player[2];
-	
-	public Rules rules = new Rules();
 	
 	private String gameName = new String();
 	
 	private int boardSize;
 	
+	
 	/****************Getters and setters******************/
 	
-	public int getRound() {return round;}
-	public void setRound(int round) {this.round = round;}
+	public static int getRound() {return round;}
+	public static void setRound(int round) {GameLogic.round = round;}
 	
 	public String getGameName() {return gameName;}
 	
@@ -52,7 +51,9 @@ public class GameLogic implements java.io.Serializable{
 		pawn = null;
 		player[0] = new Player("Player 1",1);
 		player[1] = new Player("Player 2",2);
-
+		
+		new PawnGenerator();
+		
 		switch(game) {
 		case "Hnefatafl":
 			boardSize = 11;
@@ -64,6 +65,7 @@ public class GameLogic implements java.io.Serializable{
 			break;
 		case "Tawlbawrdd":
 			boardSize = 11;
+			
 			pawn = PawnGenerator.generatePawnsTawlbawrdd(player[0],player[1]);
 			break;
 		}
@@ -103,7 +105,7 @@ public class GameLogic implements java.io.Serializable{
 			// If there is a pawn in the tile pressed, save the selected tile for later use 
 			if(board[x][y].isOccupied()) {
 				selectedTile = board[x][y];
-				selectedPawn = findPawn(selectedTile.getPosX(),selectedTile.getPosY());
+				selectedPawn = findPawn(x,y);
 			}
 			
 			//Restricted tile 
@@ -114,11 +116,11 @@ public class GameLogic implements java.io.Serializable{
 			// If there is no pawn on the tile pressed
 			else { 
 				// Check that the correct player played
-				if(rules.playerTurn(round,selectedPawn.getPlayer().getID())) {
+				if(Rules.playerTurn(round,selectedPawn.getPlayer().getID())) {
 					
 					// Only allowed to move in a straight line
-					if(rules.legalMove(selectedTile.getPosX(),selectedTile.getPosY(), x, y)) {
-						if(!rules.pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
+					if(Rules.legalMove(selectedTile.getPosX(),selectedTile.getPosY(), x, y)) {
+						if(!Rules.pawnsBetween(board, selectedTile.getPosX(),x,selectedTile.getPosY(),y)) {
 		
 							selectedTile.setOccupied(false);
 							selectedTile.setPawn(null);
@@ -126,7 +128,7 @@ public class GameLogic implements java.io.Serializable{
 							// Move the selectedPawn to the new location
 							selectedPawn.move(x, y);
 							
-							rules.checkCapture(board, pawn, selectedPawn, GameLogic.this);
+							Rules.checkCapture(board, pawn, selectedPawn, GameLogic.this);
 							
 							// Increment round when a player made a move
 							round++;

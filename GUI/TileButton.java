@@ -1,10 +1,11 @@
 package GUI;
+
 import javax.swing.JButton;
 
 import Core.Pawn;
 import Core.TileInterface;
 
-public class TileButton extends JButton implements TileInterface{
+public class TileButton extends JButton implements TileInterface {
 	/**
 	 * 
 	 */
@@ -14,21 +15,21 @@ public class TileButton extends JButton implements TileInterface{
 	private boolean occupied = false;
 	private boolean restricted = false;
 	private Pawn pawn;
-	
+
 	public TileButton(int posX, int posY) {
 		this.posX = posX;
 		this.posY = posY;
 		this.pawn = null;
 	}
-	
+
 	public TileButton(int posX, int posY, Pawn pawn) {
 		this.posX = posX;
 		this.posY = posY;
 		this.pawn = pawn;
 	}
-	
+
 	/****************Getters and setters******************/
-	
+
 	public int getPosX() {return posX;}
 	public void setPosX(int posX) {this.posX = posX;}
 
@@ -40,7 +41,7 @@ public class TileButton extends JButton implements TileInterface{
 
 	public Pawn getPawn() {return pawn;}
 	public void setPawn(Pawn pawn) {this.pawn = pawn;}
-	
+
 	public boolean isRestricted() {return restricted;}
 	public void setRestricted(boolean restricted) {this.restricted = restricted;}
 
@@ -49,4 +50,7 @@ public class TileButton extends JButton implements TileInterface{
 	public String toString() {
 		return ("Pos x: " + this.posX + " Pos y: " + this.posY);
 	}
+	
+
+
 }

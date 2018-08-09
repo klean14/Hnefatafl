@@ -2,7 +2,20 @@ package Core;
 
 import java.util.ArrayList;
 
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.undo.UndoManager;
+
+
 public class PawnGenerator {
+	
+	private static UndoManager undoManager = new UndoManager();;
+	
+	public static UndoManager getUndoManager() {return undoManager;}
+
+	public PawnGenerator() {
+		undoManager.setLimit(2);
+	}
 	
 	public static ArrayList<Pawn> generatePawnsHnefatafl(Player p1, Player p2) {
 		ArrayList<Pawn> pawn = new ArrayList<Pawn>();
@@ -56,6 +69,8 @@ public class PawnGenerator {
 		pawn.add(new Pawn(5,7,p2));
 		
 		/************************/
+
+		addListeners(pawn);
 		
 		return pawn;
 	}
@@ -100,6 +115,8 @@ public class PawnGenerator {
 		pawn.add(new Pawn(4,6,p2));
 		
 		/************************/
+		
+		addListeners(pawn);
 		
 		return pawn;
 	}
@@ -156,7 +173,25 @@ public class PawnGenerator {
 		
 		/************************/
 		
+		addListeners(pawn);
+		
 		return pawn;
 	}
 	
+	
+	private static void addListeners(ArrayList<Pawn> pawn) {
+		SimpleUEListener sl = new SimpleUEListener();
+		for(Pawn pawns: pawn)
+			pawns.addUndoableEditListener(sl);
+	}
+	public static class SimpleUEListener implements UndoableEditListener {
+		// When an UndoableEditEvent is generated (each time one of the buttons
+		// is pressed), we add it to the UndoManager and then get the manager's
+		// undo/redo names and set the undo/redo button labels. Finally, we
+		// enable/disable these buttons by asking the manager what we are
+		// allowed to do.
+		public void undoableEditHappened(UndoableEditEvent ev) {
+			undoManager.addEdit(ev.getEdit());
+		}
+	}
 }

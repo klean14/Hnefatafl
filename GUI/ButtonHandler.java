@@ -10,11 +10,10 @@ public class ButtonHandler implements ActionListener{
 	
 	/**
 	 * Constructor specifically for TileButton instances
-	 * @param board The 2D array of TileButtons
 	 * @param x x position of the TileButton
 	 * @param y y position of the TileButton
 	 */
-	public ButtonHandler(TileButton[][] board,int x, int y, TableTopGUI tt) {
+	public ButtonHandler(int x, int y, TableTopGUI tt) {
 		this.x = x;
 		this.y = y;
 		this.tt = tt;
@@ -22,10 +21,7 @@ public class ButtonHandler implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {			
-//		if(e.getSource() == saveItem) {saveGame();}
-//		else {
-			tt.gameSequence(x,y);
-//		}
+		tt.gameSequence(x,y);
 	}
 
 }

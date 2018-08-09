@@ -1,6 +1,11 @@
 package Core;
 
 import java.util.ArrayList;
+
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotUndoException;
+
 /**
  * This class has all the necessary checks for capturing a pawn (or the king) and if the game has ended
  *
@@ -13,7 +18,9 @@ public class Rules implements java.io.Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	private static Pawn undoablePawn = null;
+	private static ArrayList<Pawn> pawnsList;
+	
 	/**
 	 * Check if the player has captured a pawn
 	 * @param board 2D array of Tile type
@@ -21,7 +28,9 @@ public class Rules implements java.io.Serializable {
 	 * @param pawn The Pawn object that initiated the check
 	 * @param game The Game object
 	 */
-	public void checkCapture(TileInterface[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
+	public static boolean checkCapture(TileInterface[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
+		boolean capture = false;
+		pawnsList = pawns;
 		int xPos = pawn.getPosX();
 		int yPos = pawn.getPosY();
 		Player player = pawn.getPlayer();
@@ -48,7 +57,6 @@ public class Rules implements java.io.Serializable {
 						// Special case for the king
 						if(enemyPawn instanceof KingPawn) {
 							checkCaptureKing(enemyPawn,board,pawns);
-							break;
 						}
 						
 						// Get the pawn 2 tiles away, if there is any
@@ -60,6 +68,7 @@ public class Rules implements java.io.Serializable {
 							if(alliedPawn.getPlayer() == player) {
 								// Remove that pawn
 								removePawn(board[xPos + l][yPos + k],pawns,enemyPawn);
+								capture = true;
 							}
 						}
 					}
@@ -70,6 +79,7 @@ public class Rules implements java.io.Serializable {
 					// Check if the tile 2 tiles away from the pawn is a restricted tile
 					if( board[xPos + 2*l][yPos + 2*k].isRestricted()) {
 						removePawn(board[xPos + l][yPos + k],pawns,enemyPawn);
+						capture = true;
 					}
 				}
 
@@ -78,7 +88,9 @@ public class Rules implements java.io.Serializable {
 			catch (ArrayIndexOutOfBoundsException e) {
 				// Do nothing
 			}
+			
 		}
+		return capture;
 	}
 
 	/**
@@ -87,7 +99,7 @@ public class Rules implements java.io.Serializable {
 	 * @param board 2D array of Tile type
 	 * @param pawns ArrayList of all the Pawn objects
 	 */
-	private void checkCaptureKing(Pawn king, TileInterface[][] board, ArrayList<Pawn> pawns) {
+	private static void checkCaptureKing(Pawn king, TileInterface[][] board, ArrayList<Pawn> pawns) {
 		int xPos = king.getPosX();
 		int yPos = king.getPosY();
 		Player player = king.getPlayer();
@@ -133,7 +145,7 @@ public class Rules implements java.io.Serializable {
 		
 	}
 
-	public boolean checkEnd(ArrayList<Pawn> pawns, TileInterface[][] board) {
+	public static boolean checkEnd(ArrayList<Pawn> pawns, TileInterface[][] board) {
 		int nRows = board.length - 1;
 		int nCols = board[0].length - 1;
 		
@@ -153,7 +165,9 @@ public class Rules implements java.io.Serializable {
 		return true;
 	}
 
-	private void removePawn(TileInterface tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
+	private static void removePawn(TileInterface tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
+		undoablePawn = tile.getPawn();
+		Pawn.getListener().undoableEditHappened(new UndoableEditEvent(tile.getPawn(),new UndoableToggleEdit(tile)));
 		tile.setPawn(null);
 		tile.setOccupied(false);
 		pawns.remove(enemyPawn);
@@ -167,7 +181,7 @@ public class Rules implements java.io.Serializable {
 	 * @param originY The origin Y position
 	 * @return True if the move is legal
 	 */
-	public boolean legalMove(int destinationX, int destinationY, int originX, int originY) {
+	public static boolean legalMove(int destinationX, int destinationY, int originX, int originY) {
 		return (destinationX == originX ^ destinationY == originY);
 	}
 
@@ -177,7 +191,7 @@ public class Rules implements java.io.Serializable {
 	 * @param playerID The pawn's player id that belongs to
 	 * @return true if the selected pawn belongs to the player
 	 */
-	public boolean playerTurn(int round, int playerID) {
+	public static boolean playerTurn(int round, int playerID) {
 		return (round % 2 ) + 1 == playerID;
 	}
 
@@ -190,7 +204,7 @@ public class Rules implements java.io.Serializable {
 	 * @param thatY Y coordinate of new tile
 	 * @return true if there are pawns between, otherwise false
 	 */
-	public boolean pawnsBetween(TileInterface[][] board, int thisX, int thatX, int thisY, int thatY) {
+	public static boolean pawnsBetween(TileInterface[][] board, int thisX, int thatX, int thisY, int thatY) {
 		int resultX = thisX - thatX;
 		int resultY = thisY - thatY;
 		// Moves to the right
@@ -220,6 +234,33 @@ public class Rules implements java.io.Serializable {
 		
 		return false;
 	}
+	
+	private static class UndoableToggleEdit extends AbstractUndoableEdit {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private TileInterface pawnTile;
+
+		// Create a new edit for a JToggleButton that has just been toggled.
+		public UndoableToggleEdit(TileInterface pawnTile) {
+			this.pawnTile = pawnTile;
+		}
+
+		// Return a reasonable name for this edit.
+		public String getPresentationName() {
+			return "PosX:" + pawnTile.getPosX() + "PosY:" + pawnTile.getPosY();
+		}
+
+		// Undo by setting the button state to the opposite value.
+		public void undo() throws CannotUndoException {
+			super.undo();
+			pawnsList.add(new Pawn(undoablePawn.getPosX(),undoablePawn.getPosY(),undoablePawn.getPlayer()));
+			pawnTile.setPawn(undoablePawn);
+			pawnTile.setOccupied(true);
+			PawnGenerator.getUndoManager().undo();
+		}
+	}
 }
 

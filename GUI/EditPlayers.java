@@ -90,7 +90,6 @@ public class EditPlayers extends JFrame implements ActionListener{
 		this.add(p1Contents,BorderLayout.WEST);
 		this.add(p2Contents,BorderLayout.EAST);
 		
-		
 	}
 
 	@Override

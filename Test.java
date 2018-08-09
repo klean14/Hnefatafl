@@ -8,7 +8,6 @@ import Core.Player;
 import Core.Rules;
 
 class Test {
-	private Rules rules = new Rules();
 	
 	private Player p1 = new Player("Player 1",1);
 	private Player p2 = new Player("Player 2",2);
@@ -23,7 +22,7 @@ class Test {
 		pawn.add(new Pawn(1,1,p1));
 		pawn.add(new Pawn(1,2,p2));
 		
-		assertFalse(rules.legalMove(2 , 3 , pawn.get(0).getPosX(), pawn.get(0).getPosY()),"Not a legal move");
+		assertFalse(Rules.legalMove(2 , 3 , pawn.get(0).getPosX(), pawn.get(0).getPosY()),"Not a legal move");
 		
 	}
 
@@ -36,7 +35,7 @@ class Test {
 		pawn.add(new Pawn(1,1,p1));
 		pawn.add(new Pawn(1,2,p2));
 		
-		assertFalse(rules.pawnsBetween(board, pawn.get(0).getPosX(),pawn.get(0).getPosY(),1,3),"Pawns detected between");
+		assertFalse(Rules.pawnsBetween(board, pawn.get(0).getPosX(),pawn.get(0).getPosY(),1,3),"Pawns detected between");
 		
 	}
 	

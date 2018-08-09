@@ -15,8 +15,7 @@ public class ImagePanel extends JPanel {
 			
 			g.drawImage(ImageIO.read(getClass().getResource(("board.jpg"))),0,0,this.getWidth(), this.getHeight(), null);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-	//					e.printStackTrace();
+			System.err.println("File error");
 		}
 	}
 

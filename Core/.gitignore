@@ -20,3 +20,7 @@ Hnefatafl/references
 /TileButton.class
 /TileInterface.class
 /KingPawn.class
+/Pawn$UndoableToggleEdit.class
+/PawnGenerator$SimpleUEListener.class
+/Rules$SimpleUEListener.class
+/Rules$UndoableToggleEdit.class
