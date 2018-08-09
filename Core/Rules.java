@@ -167,7 +167,7 @@ public class Rules implements java.io.Serializable {
 
 	private static void removePawn(TileInterface tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
 		undoablePawn = tile.getPawn();
-		Pawn.getListener().undoableEditHappened(new UndoableEditEvent(tile.getPawn(),new UndoableToggleEdit(tile)));
+		Pawn.getListener().undoableEditHappened(new UndoableEditEvent(tile.getPawn(),new UndoableRemoveEdit(tile)));
 		tile.setPawn(null);
 		tile.setOccupied(false);
 		pawns.remove(enemyPawn);
@@ -235,7 +235,7 @@ public class Rules implements java.io.Serializable {
 		return false;
 	}
 	
-	private static class UndoableToggleEdit extends AbstractUndoableEdit {
+	private static class UndoableRemoveEdit extends AbstractUndoableEdit {
 
 		/**
 		 * 
@@ -244,7 +244,7 @@ public class Rules implements java.io.Serializable {
 		private TileInterface pawnTile;
 
 		// Create a new edit for a JToggleButton that has just been toggled.
-		public UndoableToggleEdit(TileInterface pawnTile) {
+		public UndoableRemoveEdit(TileInterface pawnTile) {
 			this.pawnTile = pawnTile;
 		}
 

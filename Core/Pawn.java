@@ -54,7 +54,7 @@ public class Pawn implements java.io.Serializable{
 	public void move(int newPosX, int newPosY) {
 		oldPosX = this.posX;
 		oldPosY = this.posY;
-		listener.undoableEditHappened(new UndoableEditEvent(this,new UndoableToggleEdit(this)));
+		listener.undoableEditHappened(new UndoableEditEvent(this,new UndoableMoveEdit(this)));
 		
 		this.posX = newPosX;
 		this.posY = newPosY;
@@ -71,7 +71,7 @@ public class Pawn implements java.io.Serializable{
 		return "PosX:" + posX + "PosY" + posY;
 	}
 	
-	class UndoableToggleEdit extends AbstractUndoableEdit {
+	class UndoableMoveEdit extends AbstractUndoableEdit {
 
 		/**
 		 * 
@@ -80,7 +80,7 @@ public class Pawn implements java.io.Serializable{
 		private Pawn pawn;
 
 		// Create a new edit for a JToggleButton that has just been toggled.
-		public UndoableToggleEdit(Pawn pawn) {
+		public UndoableMoveEdit(Pawn pawn) {
 			this.pawn = pawn;
 		}
 

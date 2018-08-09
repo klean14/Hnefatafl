@@ -180,16 +180,14 @@ public class PawnGenerator {
 	
 	
 	private static void addListeners(ArrayList<Pawn> pawn) {
-		SimpleUEListener sl = new SimpleUEListener();
+		MyUndoableEditListener sl = new MyUndoableEditListener();
 		for(Pawn pawns: pawn)
 			pawns.addUndoableEditListener(sl);
 	}
-	public static class SimpleUEListener implements UndoableEditListener {
-		// When an UndoableEditEvent is generated (each time one of the buttons
-		// is pressed), we add it to the UndoManager and then get the manager's
-		// undo/redo names and set the undo/redo button labels. Finally, we
-		// enable/disable these buttons by asking the manager what we are
-		// allowed to do.
+	
+	public static class MyUndoableEditListener implements UndoableEditListener {
+		// When an UndoableEditEvent is generated (each time one of the pawns
+		// is moved), we add it to the UndoManager
 		public void undoableEditHappened(UndoableEditEvent ev) {
 			undoManager.addEdit(ev.getEdit());
 		}
