@@ -79,7 +79,6 @@ public class Pawn implements java.io.Serializable{
 		private static final long serialVersionUID = 1L;
 		private Pawn pawn;
 
-		// Create a new edit for a JToggleButton that has just been toggled.
 		public UndoableMoveEdit(Pawn pawn) {
 			this.pawn = pawn;
 		}
@@ -90,7 +89,7 @@ public class Pawn implements java.io.Serializable{
 		}
 
 
-		// Undo by setting the button state to the opposite value.
+		// Undo by moving the pawn back to its previous position
 		public void undo() throws CannotUndoException {
 			super.undo();
 			

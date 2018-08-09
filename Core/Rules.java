@@ -243,7 +243,6 @@ public class Rules implements java.io.Serializable {
 		private static final long serialVersionUID = 1L;
 		private TileInterface pawnTile;
 
-		// Create a new edit for a JToggleButton that has just been toggled.
 		public UndoableRemoveEdit(TileInterface pawnTile) {
 			this.pawnTile = pawnTile;
 		}
@@ -253,12 +252,15 @@ public class Rules implements java.io.Serializable {
 			return "PosX:" + pawnTile.getPosX() + "PosY:" + pawnTile.getPosY();
 		}
 
-		// Undo by setting the button state to the opposite value.
+		// Undo by regenerating the pawn and setting it to the tile
 		public void undo() throws CannotUndoException {
+			// First undo to regenerate the pawn
 			super.undo();
 			pawnsList.add(new Pawn(undoablePawn.getPosX(),undoablePawn.getPosY(),undoablePawn.getPlayer()));
 			pawnTile.setPawn(undoablePawn);
 			pawnTile.setOccupied(true);
+			
+			// Call undo again to undo the last move
 			PawnGenerator.getUndoManager().undo();
 		}
 	}
