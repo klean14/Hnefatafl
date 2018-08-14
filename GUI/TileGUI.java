@@ -3,9 +3,9 @@ package GUI;
 import javax.swing.JButton;
 
 import Core.Pawn;
-import Core.TileInterface;
+import Core.Tile;
 
-public class TileButton extends JButton implements TileInterface {
+public class TileGUI extends JButton implements Tile {
 	/**
 	 * 
 	 */
@@ -16,16 +16,10 @@ public class TileButton extends JButton implements TileInterface {
 	private boolean restricted = false;
 	private Pawn pawn;
 
-	public TileButton(int posX, int posY) {
+	public TileGUI(int posX, int posY) {
 		this.posX = posX;
 		this.posY = posY;
 		this.pawn = null;
-	}
-
-	public TileButton(int posX, int posY, Pawn pawn) {
-		this.posX = posX;
-		this.posY = posY;
-		this.pawn = pawn;
 	}
 
 	/****************Getters and setters******************/

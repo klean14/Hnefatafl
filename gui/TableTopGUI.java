@@ -58,7 +58,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 	
 	private JLabel roundLabel, playerTurnLabel,p1Image,p1Name,p2Image,p2Name;
 	
-	private TileButton[][] board;
+	private TileGUI[][] board;
 	
 	private int boardSize;
 	
@@ -78,7 +78,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 
 		this.game = game;
 		this.boardSize = size;
-		this.board = new TileButton[size][size];
+		this.board = new TileGUI[size][size];
 		this.pawn = pawns;
 		this.player = game.getPlayer();
 		this.undoManager = PawnGenerator.getUndoManager();
@@ -99,7 +99,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 	private void setup(String title) {
 		this.setTitle(title);
 		this.setSize(800, 800);
-		this.setResizable(false);
+//		this.setResizable(false);
+		this.setMinimumSize(new Dimension(800,800));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 		
@@ -141,15 +142,16 @@ public class TableTopGUI extends JFrame implements TableTop {
 		undoItem.addActionListener(new MenuHandler());
 		
 		// Add to the menu
+		newGame.add(hnefataflItem);
+		newGame.add(tablutItem);
+		newGame.add(tawlbawrddItem);
+		
 		fileMenu.add(newGame);
 		fileMenu.addSeparator();
 		fileMenu.add(saveItem);
 		fileMenu.add(loadItem);
 		fileMenu.addSeparator();
 		fileMenu.add(quitItem);
-		newGame.add(hnefataflItem);
-		newGame.add(tablutItem);
-		newGame.add(tawlbawrddItem);
 		
 		editMenu.add(editPlayers);
 		editMenu.addSeparator();
@@ -167,13 +169,14 @@ public class TableTopGUI extends JFrame implements TableTop {
 		playerTurnLabel.setFont(new Font("Rockwell",Font.BOLD,14));
 		
 		p1Image = new JLabel();
-		p2Image = new JLabel();
-		
 		p1Image.setIcon(player[0].getPlayerImage());
-		p2Image.setIcon(player[1].getPlayerImage());
 		
 		p1Name = new JLabel(player[0].getName());
 		p1Name.setFont(new Font("Rockwell",Font.PLAIN,12));
+		
+		p2Image = new JLabel();
+		p2Image.setIcon(player[1].getPlayerImage());
+		
 		p2Name = new JLabel(player[1].getName());
 		p2Name.setFont(new Font("Rockwell",Font.PLAIN,12));
 		
@@ -182,21 +185,18 @@ public class TableTopGUI extends JFrame implements TableTop {
 		contents.setLayout(new GridLayout(boardSize,boardSize));
 		
 		player1Panel = new JPanel();
-		player2Panel = new JPanel();
-		
-		
 		player1Panel.setLayout(new BoxLayout(player1Panel, BoxLayout.PAGE_AXIS));
-		player2Panel.setLayout(new BoxLayout(player2Panel, BoxLayout.PAGE_AXIS));
-				
-		topPane = new JPanel(new BorderLayout());
-		topPane.setPreferredSize(new Dimension(this.getWidth(),100));
 		player1Panel.add(p1Image);
 		player1Panel.add(p1Name);
 		
-		
+		player2Panel = new JPanel();
+		player2Panel.setLayout(new BoxLayout(player2Panel, BoxLayout.PAGE_AXIS));
 		player2Panel.add(p2Image);
 		player2Panel.add(p2Name);
 		
+		topPane = new JPanel(new BorderLayout());
+		topPane.setPreferredSize(new Dimension(this.getWidth(),100));
+
 		topPane.add(player1Panel,BorderLayout.WEST);
 		topPane.add(player2Panel,BorderLayout.EAST);
 		topPane.add(roundLabel,BorderLayout.NORTH);
@@ -222,7 +222,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		//Add the tiles on the board
 		for(int row = 0; row < boardSize; row++) {
 			for(int col = 0; col < boardSize; col++) {
-				board[col][row] = new TileButton(col,row);
+				board[col][row] = new TileGUI(col,row);
 				board[col][row].setLayout(new BorderLayout());
 				board[col][row].setRolloverEnabled(false);
 				
@@ -247,8 +247,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 		displayRound(GameLogic.getRound());
 		displayPlayer((GameLogic.getRound() % 2)+1);
 		
-		for(TileButton[] tileRow : board) {
-			for(TileButton tile : tileRow) {
+		for(TileGUI[] tileRow : board) {
+			for(TileGUI tile : tileRow) {
 				int row = tile.getPosX();
 				int col = tile.getPosY();
 				
@@ -334,6 +334,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 		game.nextRound(board, x, y);
 		updateUndoRedo();
 		int round = GameLogic.getRound();
+		
+		// Call highlightTiles only if it's the right player's turn
 		if(board[x][y].isOccupied() && Rules.playerTurn(round,game.getSelectedPawn().getPlayer().getID())) {
 			highlightTiles(x,y);
 			board[x][y].setBorder(new LineBorder(Color.YELLOW));
@@ -342,7 +344,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		printBoard();
 		
 		if(Rules.checkEnd(pawn, board)) {
-			JOptionPane.showMessageDialog(null, "Congratulations " + player[((--round % 2) + 1)].getName());
+			JOptionPane.showMessageDialog(null, "Congratulations " + player[((--round % 2))].getName());
 			contents.removeAll();
 		}
 	}
@@ -352,12 +354,12 @@ public class TableTopGUI extends JFrame implements TableTop {
 	 * Highlight the available tiles the pawn can move to in all cardinal directions until it finds another pawn
 	 */
 	private void highlightTiles(int x, int y) {
-		Color c=new Color(210,105,30,100);
+		Color tileBackgroundColor = new Color(210,105,30,100);
 		
 		for(int i = x+1; i < board.length; i++) {
 			if(!board[i][y].isOccupied()) {
 				board[i][y].setContentAreaFilled(true);
-				board[i][y].setBackground(c);
+				board[i][y].setBackground(tileBackgroundColor);
 			}
 			else {
 				break;
@@ -369,13 +371,13 @@ public class TableTopGUI extends JFrame implements TableTop {
 			}
 			else {
 				board[i][y].setContentAreaFilled(true);
-				board[i][y].setBackground(c);
+				board[i][y].setBackground(tileBackgroundColor);
 			}
 		}
 		for(int i = y+1; i < board.length; i++) {
 			if(!board[x][i].isOccupied()) {
 				board[x][i].setContentAreaFilled(true);
-				board[x][i].setBackground(c);
+				board[x][i].setBackground(tileBackgroundColor);
 			}
 			else {
 				break;
@@ -387,15 +389,15 @@ public class TableTopGUI extends JFrame implements TableTop {
 			}
 			else {
 				board[x][i].setContentAreaFilled(true);
-				board[x][i].setBackground(c);
+				board[x][i].setBackground(tileBackgroundColor);
 			}
 		}
 	}
 
 
+	/************* Handler class for the menu events *************/
 	private class MenuHandler implements  ActionListener{
 		
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == saveItem) {
@@ -432,7 +434,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 			printBoard();
 		}
 	}
-
+	/**************************************************************/
+	
 	/**
 	 * Saves the game state
 	 */
@@ -445,13 +448,17 @@ public class TableTopGUI extends JFrame implements TableTop {
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Tafl save games", "ser");
 		saveFile.addChoosableFileFilter(filter);
 		
+		// Returns an integer to check if the file is valid
 		int returnValue = saveFile.showSaveDialog(null);
 
+		// If file is valid and approved
 		if (returnValue == JFileChooser.APPROVE_OPTION) {
+			// Create new save file
 			File selectedFile = saveFile.getSelectedFile();
 			filename = selectedFile.getAbsolutePath() + ".ser";
 			
 			try {
+				// Write the object to the file
 				FileOutputStream file = new FileOutputStream(filename);
 				ObjectOutputStream out = new ObjectOutputStream(file);
 				
@@ -496,6 +503,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 				
 				gl = (GameLogic) in.readObject();
 				
+				// Dispose the current frame and create a new one
 				dispose();
 				new TableTopGUI(gl.getPawn(),gl,gl.getBoardSize(),gl.getGameName());
 				
