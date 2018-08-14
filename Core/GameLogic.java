@@ -2,7 +2,7 @@ package Core;
 
 import java.util.ArrayList;
 
-import CommandLine.TableTopCMD;
+import CommandLine.TableTopCLI;
 import GUI.TableTopGUI;
 
 public class GameLogic implements java.io.Serializable{
@@ -11,7 +11,7 @@ public class GameLogic implements java.io.Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	/** The tile that was selected first **/
-	private TileInterface selectedTile = null;
+	private Tile selectedTile = null;
 	/** The pawn that was on the selected tile **/
 	private Pawn selectedPawn = null;
 	
@@ -19,7 +19,7 @@ public class GameLogic implements java.io.Serializable{
 	private ArrayList<Pawn> pawn;
 	
 	/** The number of rounds played **/
-	private static int round = 0;
+	private static int round;
 	
 	private Player[] player = new Player[2];
 	
@@ -48,7 +48,8 @@ public class GameLogic implements java.io.Serializable{
 
 	public GameLogic(String game, boolean gui) {
 		gameName = game;
-		pawn = null;
+		round = 0;
+		pawn = new ArrayList<Pawn>();
 		player[0] = new Player("Player 1",1);
 		player[1] = new Player("Player 2",2);
 		
@@ -74,7 +75,7 @@ public class GameLogic implements java.io.Serializable{
 			new TableTopGUI(pawn,this,boardSize,game);
 		}
 		else {
-			new TableTopCMD(pawn,this,boardSize);
+			new TableTopCLI(pawn,this,boardSize);
 		}
 	}
 
@@ -100,7 +101,7 @@ public class GameLogic implements java.io.Serializable{
 	 * @param x x Position of the selected Tile
 	 * @param y y position of the selected Tile
 	 */
-	public void nextRound(TileInterface[][] board,int x, int y) {
+	public void nextRound(Tile[][] board,int x, int y) {
 		try { 
 			// If there is a pawn in the tile pressed, save the selected tile for later use 
 			if(board[x][y].isOccupied()) {
@@ -109,7 +110,7 @@ public class GameLogic implements java.io.Serializable{
 			}
 			
 			//Restricted tile 
-			else if((board[x][y].isRestricted() && !(selectedPawn instanceof KingPawn))) {
+			else if(Rules.PawnAccessedRestrictedTile(board[x][y],selectedPawn)) {
 				System.out.println("Warning! Restricted tile tried to be accessed");
 			} 
 			
@@ -154,6 +155,8 @@ public class GameLogic implements java.io.Serializable{
 			System.out.println("No pawn selected");
 		}
 	}
+	
+
 	
 	
 }

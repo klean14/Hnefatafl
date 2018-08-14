@@ -24,3 +24,8 @@ Hnefatafl/references
 /PawnGenerator$SimpleUEListener.class
 /Rules$SimpleUEListener.class
 /Rules$UndoableToggleEdit.class
+/Pawn$UndoableEdit.class
+/Pawn$UndoableMoveEdit.class
+/PawnGenerator$UndoableEventListener.class
+/PawnGenerator$MyUndoableEditListener.class
+/Rules$UndoableRemoveEdit.class

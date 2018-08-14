@@ -28,7 +28,7 @@ public class Rules implements java.io.Serializable {
 	 * @param pawn The Pawn object that initiated the check
 	 * @param game The Game object
 	 */
-	public static boolean checkCapture(TileInterface[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
+	public static boolean checkCapture(Tile[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
 		boolean capture = false;
 		pawnsList = pawns;
 		int xPos = pawn.getPosX();
@@ -58,17 +58,18 @@ public class Rules implements java.io.Serializable {
 						if(enemyPawn instanceof KingPawn) {
 							checkCaptureKing(enemyPawn,board,pawns);
 						}
-						
-						// Get the pawn 2 tiles away, if there is any
-						alliedPawn = game.findPawn(xPos + 2*l, yPos + 2*k);
-						
-						// If the pawn next to it belongs to the other player
-						if(enemyPawn.getPlayer() != player) {
-							// If the pawn 2 tiles away in the same direction is of the same player
-							if(alliedPawn.getPlayer() == player) {
-								// Remove that pawn
-								removePawn(board[xPos + l][yPos + k],pawns,enemyPawn);
-								capture = true;
+						else {
+							// Get the pawn 2 tiles away, if there is any
+							alliedPawn = game.findPawn(xPos + 2*l, yPos + 2*k);
+							
+							// If the pawn next to it belongs to the other player
+							if(enemyPawn.getPlayer() != player) {
+								// If the pawn 2 tiles away in the same direction is of the same player
+								if(alliedPawn.getPlayer() == player) {
+									// Remove that pawn
+									removePawn(board[xPos + l][yPos + k],pawns,enemyPawn);
+									capture = true;
+								}
 							}
 						}
 					}
@@ -99,7 +100,7 @@ public class Rules implements java.io.Serializable {
 	 * @param board 2D array of Tile type
 	 * @param pawns ArrayList of all the Pawn objects
 	 */
-	private static void checkCaptureKing(Pawn king, TileInterface[][] board, ArrayList<Pawn> pawns) {
+	private static void checkCaptureKing(Pawn king, Tile[][] board, ArrayList<Pawn> pawns) {
 		int xPos = king.getPosX();
 		int yPos = king.getPosY();
 		Player player = king.getPlayer();
@@ -145,7 +146,7 @@ public class Rules implements java.io.Serializable {
 		
 	}
 
-	public static boolean checkEnd(ArrayList<Pawn> pawns, TileInterface[][] board) {
+	public static boolean checkEnd(ArrayList<Pawn> pawns, Tile[][] board) {
 		int nRows = board.length - 1;
 		int nCols = board[0].length - 1;
 		
@@ -165,7 +166,7 @@ public class Rules implements java.io.Serializable {
 		return true;
 	}
 
-	private static void removePawn(TileInterface tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
+	private static void removePawn(Tile tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
 		undoablePawn = tile.getPawn();
 		Pawn.getListener().undoableEditHappened(new UndoableEditEvent(tile.getPawn(),new UndoableRemoveEdit(tile)));
 		tile.setPawn(null);
@@ -204,7 +205,7 @@ public class Rules implements java.io.Serializable {
 	 * @param thatY Y coordinate of new tile
 	 * @return true if there are pawns between, otherwise false
 	 */
-	public static boolean pawnsBetween(TileInterface[][] board, int thisX, int thatX, int thisY, int thatY) {
+	public static boolean pawnsBetween(Tile[][] board, int thisX, int thatX, int thisY, int thatY) {
 		int resultX = thisX - thatX;
 		int resultY = thisY - thatY;
 		// Moves to the right
@@ -241,9 +242,9 @@ public class Rules implements java.io.Serializable {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		private TileInterface pawnTile;
+		private Tile pawnTile;
 
-		public UndoableRemoveEdit(TileInterface pawnTile) {
+		public UndoableRemoveEdit(Tile pawnTile) {
 			this.pawnTile = pawnTile;
 		}
 
@@ -263,6 +264,10 @@ public class Rules implements java.io.Serializable {
 			// Call undo again to undo the last move
 			PawnGenerator.getUndoManager().undo();
 		}
+	}
+	
+	public static boolean PawnAccessedRestrictedTile(Tile board, Pawn selectedPawn) {
+		return board.isRestricted() && !(selectedPawn instanceof KingPawn);
 	}
 }
 
