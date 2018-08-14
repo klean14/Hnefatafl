@@ -15,7 +15,7 @@ import Core.Player;
 import Core.Rules;
 import Core.TableTop;
 
-public class TableTopCMD implements TableTop {
+public class TableTopCLI implements TableTop {
 
 	private TileCLI[][] board;
 	
@@ -32,7 +32,7 @@ public class TableTopCMD implements TableTop {
 	 * @param game GameLogic instance
 	 * @param size The size of the board
 	 */
-	public TableTopCMD(ArrayList<Pawn> pawns,GameLogic game, int size) {
+	public TableTopCLI(ArrayList<Pawn> pawns,GameLogic game, int size) {
 		
 		this.game = game;
 		this.boardSize = size;
@@ -60,7 +60,7 @@ public class TableTopCMD implements TableTop {
 				
 				if(Rules.checkEnd(pawn, board)) {
 					System.out.println("Congratulations Player " + ((--round % 2) + 1));
-					new MainMenuCMD();
+					new MainMenuCLI();
 				}
 				
 				System.out.println("Input <yx> <yx> of the old and new position of the pawn respectively, separated by a space or type \"help\" for extra commands: ");
@@ -69,7 +69,7 @@ public class TableTopCMD implements TableTop {
 				String userInput = reader.nextLine();
 				
 				if(userInput.equals("exit")) {
-					new MainMenuCMD();
+					new MainMenuCLI();
 				}
 				else if(userInput.equals("save")) {
 					saveGame();
@@ -78,13 +78,17 @@ public class TableTopCMD implements TableTop {
 					if(PawnGenerator.getUndoManager().canUndo())
 						PawnGenerator.getUndoManager().undo();
 				}
+				else if(userInput.equals("edit")) {
+					editPlayer();
+				}
 				else if(userInput.equals("help")) {
 					System.out.println("=========" + System.lineSeparator()
-										 + "Commands " + System.lineSeparator()
-										 + "=========" + System.lineSeparator()
-										 + " \"exit\" to exit" + System.lineSeparator()
-										 + " \"save\" to save the game "  + System.lineSeparator()
-										 + " \"undo\" to undo the previous move");
+									 + "Commands " + System.lineSeparator()
+									 + "=========" + System.lineSeparator()
+									 + " \"exit\" to exit" + System.lineSeparator()
+									 + " \"save\" to save the game "  + System.lineSeparator()
+									 + " \"undo\" to undo the previous move" + System.lineSeparator()
+									 + " \"edit\" to edit the names of players");
 				}
 				else {
 					// Split into 2 Strings
@@ -115,6 +119,18 @@ public class TableTopCMD implements TableTop {
 				System.out.println("Wrong input. Type first a letter and second a number.");
 			}
 		}
+	}
+
+	private void editPlayer() {
+		System.out.print("Type the name of player 1: ");
+		Scanner in = new Scanner(System.in);
+		player[0].setName(in.nextLine());
+		
+		System.out.print("Type the name of player 2: ");
+		in = new Scanner(System.in);
+		player[1].setName(in.nextLine());
+		
+//		in.close();
 	}
 
 	/**

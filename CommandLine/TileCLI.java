@@ -1,9 +1,9 @@
 package CommandLine;
 
 import Core.Pawn;
-import Core.TileInterface;
+import Core.Tile;
 
-public class TileCLI implements TileInterface{
+public class TileCLI implements Tile{
 	/**
 	 * 
 	 */
@@ -18,12 +18,6 @@ public class TileCLI implements TileInterface{
 		this.posX = posX;
 		this.posY = posY;
 		this.pawn = null;
-	}
-	
-	public TileCLI(int posX, int posY, Pawn pawn) {
-		this.posX = posX;
-		this.posY = posY;
-		this.pawn = pawn;
 	}
 	
 	/****************Getters and setters******************/
