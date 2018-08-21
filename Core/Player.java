@@ -1,5 +1,4 @@
 package Core;
-
 import javax.swing.ImageIcon;
 
 public class Player implements java.io.Serializable {
@@ -9,7 +8,7 @@ public class Player implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
-	private ImageIcon playerImage = new ImageIcon("res/people.png");
+	private ImageIcon playerImage = new ImageIcon(getClass().getClassLoader().getResource("people.png"));
 	
 	//1 -> Player 1 / 2 Player 2
 	private int ID;

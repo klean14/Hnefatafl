@@ -1,6 +1,6 @@
 package Core;
-
 import java.util.ArrayList;
+import java.util.Stack;
 
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.AbstractUndoableEdit;
@@ -18,7 +18,7 @@ public class Rules implements java.io.Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static Pawn undoablePawn = null;
+	private static Stack<Pawn> undoablePawnList = new Stack<Pawn>();
 	private static ArrayList<Pawn> pawnsList;
 	
 	/**
@@ -52,7 +52,7 @@ public class Rules implements java.io.Serializable {
 					if(board[xPos + l][yPos + k].isOccupied()) {
 						
 						// Get pawn next to it, if there is any
-						enemyPawn = game.findPawn(xPos + l, yPos + k);
+						enemyPawn = GameLogic.findPawn(xPos + l, yPos + k,pawnsList);
 						
 						// Special case for the king
 						if(enemyPawn instanceof KingPawn) {
@@ -60,7 +60,7 @@ public class Rules implements java.io.Serializable {
 						}
 						else {
 							// Get the pawn 2 tiles away, if there is any
-							alliedPawn = game.findPawn(xPos + 2*l, yPos + 2*k);
+							alliedPawn = GameLogic.findPawn(xPos + 2*l, yPos + 2*k,pawnsList);
 							
 							// If the pawn next to it belongs to the other player
 							if(enemyPawn.getPlayer() != player) {
@@ -167,7 +167,7 @@ public class Rules implements java.io.Serializable {
 	}
 
 	private static void removePawn(Tile tile,ArrayList<Pawn> pawns, Pawn enemyPawn) {
-		undoablePawn = tile.getPawn();
+		undoablePawnList.push((tile.getPawn()));
 		Pawn.getListener().undoableEditHappened(new UndoableEditEvent(tile.getPawn(),new UndoableRemoveEdit(tile)));
 		tile.setPawn(null);
 		tile.setOccupied(false);
@@ -255,19 +255,34 @@ public class Rules implements java.io.Serializable {
 
 		// Undo by regenerating the pawn and setting it to the tile
 		public void undo() throws CannotUndoException {
-			// First undo to regenerate the pawn
-			super.undo();
-			pawnsList.add(new Pawn(undoablePawn.getPosX(),undoablePawn.getPosY(),undoablePawn.getPlayer()));
+			// First regenerate the pawn
+
+			Pawn undoablePawn = undoablePawnList.pop();
+			pawnsList.add(undoablePawn);
 			pawnTile.setPawn(undoablePawn);
 			pawnTile.setOccupied(true);
 			
 			// Call undo again to undo the last move
-			PawnGenerator.getUndoManager().undo();
+			PawnFactory.getUndoManager().undo();
 		}
 	}
 	
-	public static boolean PawnAccessedRestrictedTile(Tile board, Pawn selectedPawn) {
+	public static boolean pawnAccessedRestrictedTile(Tile board, Pawn selectedPawn) {
 		return board.isRestricted() && !(selectedPawn instanceof KingPawn);
+	}
+	
+	public static String showRules() {
+		return   "- All pawns can move in a straight line horizontally or vertically (no diagonal)."  + System.lineSeparator()
+				 + "- If nothing is in the way, a pawn can move indefinitely, within the board." + System.lineSeparator()
+				 + "- Pawns cannot move to a space where it would require to go over another pawn." + System.lineSeparator()
+				 + "- Attackers and defenders play alternatively, with one move at a time." + System.lineSeparator()
+				 + "- A pawn is captured if it is surrounded by both sides in the same cardinal direction, by two pawns of the opposing team." + System.lineSeparator()
+				 + "- A pawn is NOT captured if it moves to a space in between two pawns of the opposing team." + System.lineSeparator()
+				 + "- The king pawn is captured ONLY if it is surrounded by all four sides." + System.lineSeparator()
+				 + "- The square in the center of the board, where the king is placed by default, is restricted and cannot be accessed by any pawn except for the king itself. "  + System.lineSeparator()
+				 + "- Any restricted tiles can be included in the capturing of a pawn." + System.lineSeparator()
+				 + "- If the king is captured, then the attackers win." + System.lineSeparator()
+				 + "- The defenders win only if the king manages to escape.";
 	}
 }
 

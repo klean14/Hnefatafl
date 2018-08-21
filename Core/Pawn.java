@@ -1,4 +1,5 @@
 package Core;
+import java.util.Stack;
 
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -11,16 +12,19 @@ public class Pawn implements java.io.Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private int posX,oldPosX;
-	private int posY,oldPosY;
+	private int posX;
+	private int posY;
 	private Player player;
 
+	private Stack<Position> undoableMoveList;
+	
 	private static UndoableEditListener listener;
 		
 	public Pawn(int posX, int posY, Player player) {
 		this.posX = posX;
 		this.posY = posY;
 		this.player = player;
+		this.undoableMoveList = new Stack<Position>();
 	}
 	
 	/****************Getters and setters******************/
@@ -30,12 +34,6 @@ public class Pawn implements java.io.Serializable{
 
 	public int getPosY() {return posY;}
 	public void setPosY(int posY) {this.posY = posY;}
-
-	public int getOldPosX() {return oldPosX;}
-	public void setOldPosX(int oldPosX) {this.oldPosX = oldPosX;}
-
-	public int getOldPosY() {return oldPosY;}
-	public void setOldPosY(int oldPosY) {this.oldPosY = oldPosY;}
 
 	
 	public Player getPlayer() {return player;}
@@ -52,8 +50,7 @@ public class Pawn implements java.io.Serializable{
 	 * @param newPosY Y coordinate of the new tile
 	 */
 	public void move(int newPosX, int newPosY) {
-		oldPosX = this.posX;
-		oldPosY = this.posY;
+		undoableMoveList.push(new Position(this.posX,this.posY));
 		listener.undoableEditHappened(new UndoableEditEvent(this,new UndoableMoveEdit(this)));
 		
 		this.posX = newPosX;
@@ -91,16 +88,11 @@ public class Pawn implements java.io.Serializable{
 
 		// Undo by moving the pawn back to its previous position
 		public void undo() throws CannotUndoException {
-			super.undo();
+			Position unboableMove = undoableMoveList.pop();
 			
-			int tempX = pawn.getPosX();
-			int tempY = pawn.getPosY();
-			Pawn.this.setPosX(pawn.getOldPosX());
-			Pawn.this.setPosY(pawn.getOldPosY());
+			Pawn.this.setPosX(unboableMove.getX());
+			Pawn.this.setPosY(unboableMove.getY());
 
-			Pawn.this.setOldPosX(tempX);
-			Pawn.this.setOldPosY(tempY);
-			GameLogic.setRound(GameLogic.getRound()-1);
 		}
 	}
 }

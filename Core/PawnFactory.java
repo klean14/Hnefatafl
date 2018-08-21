@@ -1,5 +1,4 @@
 package Core;
-
 import java.util.ArrayList;
 
 import javax.swing.event.UndoableEditEvent;
@@ -7,14 +6,14 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 
 
-public class PawnGenerator {
+public class PawnFactory {
 	
-	private static UndoManager undoManager = new UndoManager();;
+	private static UndoManager undoManager = new UndoManager();
 	
 	public static UndoManager getUndoManager() {return undoManager;}
 
-	public PawnGenerator() {
-		undoManager.setLimit(2);
+	public PawnFactory() {
+//		undoManager.setLimit(2);
 	}
 	
 	public static ArrayList<Pawn> generatePawnsHnefatafl(Player p1, Player p2) {
@@ -180,9 +179,9 @@ public class PawnGenerator {
 	
 	
 	private static void addListeners(ArrayList<Pawn> pawn) {
-		MyUndoableEditListener sl = new MyUndoableEditListener();
+		MyUndoableEditListener el = new MyUndoableEditListener();
 		for(Pawn pawns: pawn)
-			pawns.addUndoableEditListener(sl);
+			pawns.addUndoableEditListener(el);
 	}
 	
 	public static class MyUndoableEditListener implements UndoableEditListener {

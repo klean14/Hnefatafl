@@ -1,19 +1,16 @@
 package CommandLine;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import Core.GameLogic;
 import Core.KingPawn;
 import Core.Pawn;
-import Core.PawnGenerator;
+import Core.PawnFactory;
 import Core.Player;
 import Core.Rules;
 import Core.TableTop;
+
 
 public class TableTopCLI implements TableTop {
 
@@ -26,6 +23,8 @@ public class TableTopCLI implements TableTop {
 	private ArrayList<Pawn> pawn;
 	
 	private Player[] player;
+	
+	transient private Scanner userInput;
 	/**
 	 * Default constructor
 	 * @param pawns the arraylist of pawns
@@ -40,6 +39,7 @@ public class TableTopCLI implements TableTop {
 		this.pawn = pawns;
 		this.player = game.getPlayer();
 		
+		userInput = new Scanner(System.in);
 		gameSequence();
 	}
 
@@ -50,9 +50,15 @@ public class TableTopCLI implements TableTop {
 		createBoard();
 		
 		while(true) {
-			int round = GameLogic.getRound();
+			int round = game.getRound();
 			try {
-				System.out.println("Round: " + round);
+				System.out.println();
+				System.out.println("/****************/");
+				System.out.println(player[0].getName() + "'s pawn: o");
+				System.out.println(player[1].getName() + "'s pawn: a");
+				System.out.println("/****************/");
+				System.out.println();
+				System.out.println("Round: " + (round + 1));
 				System.out.println(player[(round % 2)].getName() + " plays");
 				
 				printBoard();
@@ -65,34 +71,50 @@ public class TableTopCLI implements TableTop {
 				
 				System.out.println("Input <yx> <yx> of the old and new position of the pawn respectively, separated by a space or type \"help\" for extra commands: ");
 				// Read user input
-				Scanner reader = new Scanner(System.in);
-				String userInput = reader.nextLine();
+				String input = userInput.nextLine();
 				
-				if(userInput.equals("exit")) {
+				switch(input) {
+				case "exit":
 					new MainMenuCLI();
-				}
-				else if(userInput.equals("save")) {
+					break;
+					
+				case "save":
 					saveGame();
-				}
-				else if(userInput.equals("undo")) {
-					if(PawnGenerator.getUndoManager().canUndo())
-						PawnGenerator.getUndoManager().undo();
-				}
-				else if(userInput.equals("edit")) {
+					break;
+					
+				case "load":
+					loadGame();
+					break;
+					
+				case "undo":
+					if(PawnFactory.getUndoManager().canUndo()) {
+						PawnFactory.getUndoManager().undo();
+						game.decrementRound();
+					}
+					break;
+					
+				case "edit":
 					editPlayer();
-				}
-				else if(userInput.equals("help")) {
+					break;
+				case "rules":
+					
+					System.out.println(Rules.showRules());
+					break;
+				case "help":
 					System.out.println("=========" + System.lineSeparator()
 									 + "Commands " + System.lineSeparator()
 									 + "=========" + System.lineSeparator()
+									 + " \"rules\" to show the rules" + System.lineSeparator()
 									 + " \"exit\" to exit" + System.lineSeparator()
 									 + " \"save\" to save the game "  + System.lineSeparator()
+									 + " \"load\" to load game "  + System.lineSeparator()
 									 + " \"undo\" to undo the previous move" + System.lineSeparator()
-									 + " \"edit\" to edit the names of players");
-				}
-				else {
+									 + " \"edit\" to edit the names of players" + System.lineSeparator());
+					break;
+					
+				default:
 					// Split into 2 Strings
-					String[] token = userInput.split(" ");
+					String[] token = input.split(" ");
 					
 					// Extract the position of the pawn to be moved
 					int oldPosY =  (int)token[0].charAt(0) - 97;
@@ -106,7 +128,6 @@ public class TableTopCLI implements TableTop {
 					
 					game.nextRound(board,newPosX,newPosY);
 				}
-				
 			} 
 			catch (NullPointerException e) {
 				System.out.println("No pawn found");
@@ -123,49 +144,40 @@ public class TableTopCLI implements TableTop {
 
 	private void editPlayer() {
 		System.out.print("Type the name of player 1: ");
-		Scanner in = new Scanner(System.in);
-		player[0].setName(in.nextLine());
+		player[0].setName(userInput.nextLine());
 		
 		System.out.print("Type the name of player 2: ");
-		in = new Scanner(System.in);
-		player[1].setName(in.nextLine());
+		player[1].setName(userInput.nextLine());
 		
-//		in.close();
 	}
 
 	/**
 	 * Saves the game state
 	 */
 	public void saveGame() {
-		FileOutputStream file = null;
-		ObjectOutputStream out = null;
-		String filename = new String();
 		
 		System.out.println("Specify the name of the file:");
-		Scanner input = new Scanner(System.in);
 		
-		try {
-			
-			filename = "saves/" + input.nextLine() + ".ser";
-			file = new FileOutputStream(filename);
-			out = new ObjectOutputStream(file);
-			
-			out.writeObject(game);
-			System.out.println("Game saved..");
-			
-			file.close();
-			out.close();
-		} 
-		catch (FileNotFoundException e) {
-
-//			e.printStackTrace();
-		} 
-		catch (IOException e) {
-
-//			e.printStackTrace();
-		}
+		String filename = userInput.nextLine() + ".ser";
+		game.saveGame(filename);
 	}
 
+	
+	public void loadGame() {
+	
+		// Skip the newline
+		System.out.println("Specify the name of the file: ");
+		
+		String filename = userInput.nextLine() +".ser";
+		
+		GameLogic gl = game.loadGame(filename);
+		if(gl == null) {
+			System.out.println("There was an error with the file");
+		}
+		else {
+			new TableTopCLI(gl.getPawn(),gl,gl.getBoardSize());
+		}
+	}
 	/**
 	 * Instantiate the tiles and set the restricted ones
 	 */
@@ -217,7 +229,7 @@ public class TableTopCLI implements TableTop {
 				boardString += " | ";
 				
 				// Check if there is a pawn in this position of the board
-				Pawn tilePawn = game.findPawn(col, row);
+				Pawn tilePawn = GameLogic.findPawn(col, row,pawn);
 					if(tilePawn != null) {
 						board[col][row].setPawn(tilePawn);
 						board[col][row].setOccupied(true);

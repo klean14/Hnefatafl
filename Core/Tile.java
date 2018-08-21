@@ -1,5 +1,4 @@
 package Core;
-
 public interface Tile extends java.io.Serializable{
 	
 	

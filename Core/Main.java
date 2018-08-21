@@ -1,6 +1,6 @@
 package Core;
-
 import CommandLine.MainMenuCLI;
+import Core.GameLogic;
 
 public class Main {
 	public static void main(String[] args) {
@@ -16,7 +16,7 @@ public class Main {
 		}
 		
 		if(graphicalMode && commandLineMode) {
-			System.out.println("ERROR: Both online and command line mode selected, select one or the other!");
+			System.out.println("ERROR: Both graphical and command line mode selected, select one or the other!");
 			System.exit(0);
 		}
 		

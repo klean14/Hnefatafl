@@ -23,21 +23,22 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import Core.Player;
 
+
 public class EditPlayers extends JFrame implements ActionListener{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	JButton updateButton,chooseP1Image,chooseP2Image;
+	private JButton updateButton,chooseP1Image,chooseP2Image;
 	
-	JLabel p1Image,p2Image,p1ImageMain,p2ImageMain, p1NameMain,p2NameMain;
+	private JLabel p1Image,p2Image,p1ImageMain,p2ImageMain, p1NameMain,p2NameMain;
 	
-	JPanel p1Contents,p2Contents;
+	private JPanel p1Contents,p2Contents;
 	
-	JTextField p1NameText,p2NameText;
+	private JTextField p1NameText,p2NameText;
 	
-	Player p1,p2;
+	private Player p1,p2;
 	
 	public EditPlayers(Player p1, Player p2, JLabel p1Image, JLabel p2Image, JLabel p1Name, JLabel p2Name) {
 		this.p1 = p1;

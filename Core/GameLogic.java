@@ -1,9 +1,16 @@
 package Core;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import CommandLine.TableTopCLI;
 import GUI.TableTopGUI;
+
 
 public class GameLogic implements java.io.Serializable{
 	/**
@@ -13,13 +20,13 @@ public class GameLogic implements java.io.Serializable{
 	/** The tile that was selected first **/
 	private Tile selectedTile = null;
 	/** The pawn that was on the selected tile **/
-	private Pawn selectedPawn = null;
+	transient private Pawn selectedPawn = null;
 	
 	/** An array of pawns **/
 	private ArrayList<Pawn> pawn;
 	
 	/** The number of rounds played **/
-	private static int round;
+	private int round;
 	
 	private Player[] player = new Player[2];
 	
@@ -30,8 +37,8 @@ public class GameLogic implements java.io.Serializable{
 	
 	/****************Getters and setters******************/
 	
-	public static int getRound() {return round;}
-	public static void setRound(int round) {GameLogic.round = round;}
+	public int getRound() {return round;}
+	public void decrementRound() {this.round--;}
 	
 	public String getGameName() {return gameName;}
 	
@@ -53,21 +60,21 @@ public class GameLogic implements java.io.Serializable{
 		player[0] = new Player("Player 1",1);
 		player[1] = new Player("Player 2",2);
 		
-		new PawnGenerator();
+		new PawnFactory();
 		
 		switch(game) {
 		case "Hnefatafl":
 			boardSize = 11;
-			pawn = PawnGenerator.generatePawnsHnefatafl(player[0],player[1]);
+			pawn = PawnFactory.generatePawnsHnefatafl(player[0],player[1]);
 			break;
 		case "Tablut":
 			boardSize = 9;
-			pawn = PawnGenerator.generatePawnsTablut(player[0],player[1]);
+			pawn = PawnFactory.generatePawnsTablut(player[0],player[1]);
 			break;
 		case "Tawlbawrdd":
 			boardSize = 11;
 			
-			pawn = PawnGenerator.generatePawnsTawlbawrdd(player[0],player[1]);
+			pawn = PawnFactory.generatePawnsTawlbawrdd(player[0],player[1]);
 			break;
 		}
 		
@@ -85,7 +92,7 @@ public class GameLogic implements java.io.Serializable{
 	 * @param y Y coordinate of the tile
 	 * @return the Pawn object if found, otherwise return null
 	 */
-	public Pawn findPawn(int x, int y) {
+	public static Pawn findPawn(int x, int y, ArrayList<Pawn> pawn) {
 		for(Pawn tilePawn : pawn) {
 			if(tilePawn.getPosX() == x && tilePawn.getPosY() == y) {
 				return tilePawn;
@@ -106,11 +113,11 @@ public class GameLogic implements java.io.Serializable{
 			// If there is a pawn in the tile pressed, save the selected tile for later use 
 			if(board[x][y].isOccupied()) {
 				selectedTile = board[x][y];
-				selectedPawn = findPawn(x,y);
+				selectedPawn = findPawn(x,y,pawn);
 			}
 			
 			//Restricted tile 
-			else if(Rules.PawnAccessedRestrictedTile(board[x][y],selectedPawn)) {
+			else if(Rules.pawnAccessedRestrictedTile(board[x][y],selectedPawn)) {
 				System.out.println("Warning! Restricted tile tried to be accessed");
 			} 
 			
@@ -156,7 +163,50 @@ public class GameLogic implements java.io.Serializable{
 		}
 	}
 	
+	public void saveGame(String filename) {
+		try {
+			
+			FileOutputStream file = new FileOutputStream(filename);
+			ObjectOutputStream out = new ObjectOutputStream(file);
+			
+			out.writeObject(this);
+			System.out.println("Game saved..");
+			
+			file.close();
+			out.close();
+		} 
+		catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} 
+		catch (IOException e) {
 
+			e.printStackTrace();
+		}
+	}
+	
+	public GameLogic loadGame(String filename) {
+
+		GameLogic gl = null;
+
+		try {
+			FileInputStream file = new FileInputStream(filename);
+			ObjectInputStream in = new ObjectInputStream(file);
+			
+			gl = (GameLogic) in.readObject();
+			
+			file.close();
+			in.close();
+			
+		} catch (FileNotFoundException e1) {
+			return null;
+		} catch (IOException e1) {
+			return null;
+		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+		}
+		
+		return gl;
+	}
 	
 	
 }

@@ -1,5 +1,4 @@
 package Core;
-
 public class KingPawn extends Pawn{
 
 	/**
