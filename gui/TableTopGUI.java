@@ -1,5 +1,4 @@
 package GUI;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,15 +8,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -35,10 +27,11 @@ import javax.swing.undo.UndoManager;
 import Core.GameLogic;
 import Core.KingPawn;
 import Core.Pawn;
-import Core.PawnGenerator;
+import Core.PawnFactory;
 import Core.Player;
 import Core.Rules;
 import Core.TableTop;
+
 
 public class TableTopGUI extends JFrame implements TableTop {
 
@@ -56,7 +49,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 	
 	private ImagePanel contents;
 	
-	private JLabel roundLabel, playerTurnLabel,p1Image,p1Name,p2Image,p2Name;
+	private JLabel roundLabel, playerTurnLabel,p1Image,p1Name,p2Image,p2Name,player1Pawn,player2Pawn;
 	
 	private TileGUI[][] board;
 	
@@ -69,8 +62,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 	private Player[] player;
 	
 	private JMenuBar menuBar;
-	private JMenu fileMenu,newGame,editMenu;
-	private JMenuItem saveItem,loadItem,quitItem,hnefataflItem,tablutItem,tawlbawrddItem,editPlayers,undoItem;
+	private JMenu fileMenu,newGame,editMenu,helpMenu;
+	private JMenuItem saveItem,loadItem,quitItem,hnefataflItem,tablutItem,tawlbawrddItem,editPlayers,undoItem,rulesItem;
 
 	private final UndoManager undoManager;
 	
@@ -81,7 +74,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		this.board = new TileGUI[size][size];
 		this.pawn = pawns;
 		this.player = game.getPlayer();
-		this.undoManager = PawnGenerator.getUndoManager();
+		this.undoManager = PawnFactory.getUndoManager();
 		
 		setup(title);
 		
@@ -109,9 +102,9 @@ public class TableTopGUI extends JFrame implements TableTop {
 		this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
 		
 		// ImageIcons
-		kPawn = new ImageIcon("res/kPawn.png");
-		wPawn = new ImageIcon("res/wPawn.png");
-		bPawn = new ImageIcon("res/bPawn.png");
+		kPawn = new ImageIcon(getClass().getClassLoader().getResource("kPawn.png"));
+		wPawn = new ImageIcon(getClass().getClassLoader().getResource("wPawn.png"));
+		bPawn = new ImageIcon(getClass().getClassLoader().getResource("bPawn.png"));
 		
 		// Menu Bar
 		menuBar = new JMenuBar();
@@ -120,16 +113,18 @@ public class TableTopGUI extends JFrame implements TableTop {
 		fileMenu = new JMenu("File");
 		newGame = new JMenu("New");
 		editMenu = new JMenu("Edit");
+		helpMenu = new JMenu("Help");
 		
 		// JMenuItem
 		hnefataflItem = new JMenuItem("Hnefatafl");
 		tablutItem = new JMenuItem("Tablut");
 		tawlbawrddItem = new JMenuItem("Tawlbawrdd");
-		saveItem = new JMenuItem("Save", new ImageIcon("res/save.png"));
-		loadItem = new JMenuItem("Load", new ImageIcon("res/load.png"));
+		saveItem = new JMenuItem("Save", new ImageIcon(getClass().getClassLoader().getResource("save.png")));
+		loadItem = new JMenuItem("Load", new ImageIcon(getClass().getClassLoader().getResource("load.png")));
 		quitItem = new JMenuItem("Quit");
-		editPlayers = new JMenuItem("Players", new ImageIcon("res/profile.png"));
-		undoItem = new JMenuItem("Undo", new ImageIcon("res/undo.png"));
+		editPlayers = new JMenuItem("Players", new ImageIcon(getClass().getClassLoader().getResource("profile.png")));
+		undoItem = new JMenuItem("Undo", new ImageIcon(getClass().getClassLoader().getResource("undo.png")));
+		rulesItem = new JMenuItem("Rules");
 		
 		// Listeners
 		saveItem.addActionListener(new MenuHandler());
@@ -140,6 +135,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		quitItem.addActionListener(new MenuHandler());
 		editPlayers.addActionListener(new MenuHandler());
 		undoItem.addActionListener(new MenuHandler());
+		rulesItem.addActionListener(new MenuHandler());
 		
 		// Add to the menu
 		newGame.add(hnefataflItem);
@@ -157,8 +153,11 @@ public class TableTopGUI extends JFrame implements TableTop {
 		editMenu.addSeparator();
 		editMenu.add(undoItem);
 		
+		helpMenu.add(rulesItem);
+		
 		menuBar.add(fileMenu);
 		menuBar.add(editMenu);
+		menuBar.add(helpMenu);
 		
 		this.setJMenuBar(menuBar);
 		
@@ -167,6 +166,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 		roundLabel.setFont(new Font("Rockwell",Font.PLAIN,14));
 		playerTurnLabel = new JLabel("Player 1 plays", SwingConstants.CENTER);
 		playerTurnLabel.setFont(new Font("Rockwell",Font.BOLD,14));
+		player1Pawn = new JLabel(bPawn);
+		player2Pawn = new JLabel(wPawn);
 		
 		p1Image = new JLabel();
 		p1Image.setIcon(player[0].getPlayerImage());
@@ -185,14 +186,16 @@ public class TableTopGUI extends JFrame implements TableTop {
 		contents.setLayout(new GridLayout(boardSize,boardSize));
 		
 		player1Panel = new JPanel();
-		player1Panel.setLayout(new BoxLayout(player1Panel, BoxLayout.PAGE_AXIS));
-		player1Panel.add(p1Image);
-		player1Panel.add(p1Name);
+		player1Panel.setLayout(new BorderLayout());
+		player1Panel.add(p1Image,BorderLayout.WEST);
+		player1Panel.add(player1Pawn,BorderLayout.EAST);
+		player1Panel.add(p1Name,BorderLayout.SOUTH);
 		
 		player2Panel = new JPanel();
-		player2Panel.setLayout(new BoxLayout(player2Panel, BoxLayout.PAGE_AXIS));
-		player2Panel.add(p2Image);
-		player2Panel.add(p2Name);
+		player2Panel.setLayout(new BorderLayout());
+		player2Panel.add(p2Image,BorderLayout.EAST);
+		player2Panel.add(player2Pawn,BorderLayout.WEST);
+		player2Panel.add(p2Name,BorderLayout.SOUTH);
 		
 		topPane = new JPanel(new BorderLayout());
 		topPane.setPreferredSize(new Dimension(this.getWidth(),100));
@@ -244,15 +247,15 @@ public class TableTopGUI extends JFrame implements TableTop {
 	public void printBoard() {
 
 		// Update the round and player labels
-		displayRound(GameLogic.getRound());
-		displayPlayer((GameLogic.getRound() % 2)+1);
+		displayRound(game.getRound());
+		displayPlayer((game.getRound() % 2)+1);
 		
 		for(TileGUI[] tileRow : board) {
 			for(TileGUI tile : tileRow) {
 				int row = tile.getPosX();
 				int col = tile.getPosY();
 				
-				Pawn tilePawn = game.findPawn(row, col);
+				Pawn tilePawn = GameLogic.findPawn(row, col,pawn);
 				if(tilePawn != null) {
 					tile.setPawn(tilePawn);
 					tile.setOccupied(true);
@@ -333,7 +336,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		
 		game.nextRound(board, x, y);
 		updateUndoRedo();
-		int round = GameLogic.getRound();
+		int round = game.getRound();
 		
 		// Call highlightTiles only if it's the right player's turn
 		if(board[x][y].isOccupied() && Rules.playerTurn(round,game.getSelectedPawn().getPlayer().getID())) {
@@ -346,6 +349,7 @@ public class TableTopGUI extends JFrame implements TableTop {
 		if(Rules.checkEnd(pawn, board)) {
 			JOptionPane.showMessageDialog(null, "Congratulations " + player[((--round % 2))].getName());
 			contents.removeAll();
+			undoItem.setEnabled(false);
 		}
 	}
 
@@ -412,14 +416,17 @@ public class TableTopGUI extends JFrame implements TableTop {
 			else if(e.getSource() == hnefataflItem) {
 				dispose();
 				new GameLogic("Hnefatafl",true);
+				PawnFactory.getUndoManager().die();
 			}
 			else if(e.getSource() == tablutItem) {
 				dispose();
 				new GameLogic("Tablut",true);
+				PawnFactory.getUndoManager().die();
 			}
 			else if(e.getSource() == tawlbawrddItem) {
 				dispose();
 				new GameLogic("Tawlbawrdd",true);
+				PawnFactory.getUndoManager().die();
 			}
 			else if(e.getSource() == editPlayers) {
 				new EditPlayers(player[0],player[1],p1Image,p2Image,p1Name,p2Name);
@@ -429,7 +436,11 @@ public class TableTopGUI extends JFrame implements TableTop {
 				if(undoManager.canUndo()) {
 					undoManager.undo();
 					updateUndoRedo();
+					game.decrementRound();
 				}
+			}
+			else if(e.getSource() == rulesItem) {
+				JOptionPane.showMessageDialog(TableTopGUI.this, Rules.showRules(),"Rules",JOptionPane.INFORMATION_MESSAGE);
 			}
 			printBoard();
 		}
@@ -442,7 +453,9 @@ public class TableTopGUI extends JFrame implements TableTop {
 	public void saveGame() {
 
 		String filename = new String();
-		JFileChooser saveFile = new JFileChooser("saves/");
+		JFileChooser saveFile = new JFileChooser();
+
+		saveFile.setCurrentDirectory(new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()));
 		
 		saveFile.setAcceptAllFileFilterUsed(false);
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Tafl save games", "ser");
@@ -456,23 +469,9 @@ public class TableTopGUI extends JFrame implements TableTop {
 			// Create new save file
 			File selectedFile = saveFile.getSelectedFile();
 			filename = selectedFile.getAbsolutePath() + ".ser";
-			
-			try {
-				// Write the object to the file
-				FileOutputStream file = new FileOutputStream(filename);
-				ObjectOutputStream out = new ObjectOutputStream(file);
-				
-				out.writeObject(game);
-				
-				file.close();
-				out.close();
-				
-				JOptionPane.showMessageDialog(null, "Game Saved!");
-			} catch (FileNotFoundException e1) {
-				JOptionPane.showMessageDialog(null, "File not found", "File Error", JOptionPane.ERROR_MESSAGE);
-			} catch (IOException e1) {
-				JOptionPane.showMessageDialog(null, "There was an error with the file", "File Error", JOptionPane.ERROR_MESSAGE);
-			}
+
+			game.saveGame(filename);
+			JOptionPane.showMessageDialog(null, "Game Saved!");
 		}
 	}
 	
@@ -481,7 +480,8 @@ public class TableTopGUI extends JFrame implements TableTop {
 	 */
 	private void loadGame() {
 		String filename = new String();
-		JFileChooser saveFile = new JFileChooser("saves/");
+		JFileChooser saveFile = new JFileChooser();
+		saveFile.setCurrentDirectory(new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()));
 		
 		// Set filter for the extension
 		saveFile.setAcceptAllFileFilterUsed(false);
@@ -494,28 +494,16 @@ public class TableTopGUI extends JFrame implements TableTop {
 		if (returnValue == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = saveFile.getSelectedFile();
 			filename = selectedFile.getAbsolutePath();
-		
-			GameLogic gl = null;
 			
-			try {
-				FileInputStream file = new FileInputStream(filename);
-				ObjectInputStream in = new ObjectInputStream(file);
-				
-				gl = (GameLogic) in.readObject();
-				
+			GameLogic gl = game.loadGame(filename);
+			
+			if(gl == null) {
+				JOptionPane.showMessageDialog(null, "There was an error with the file", "File Error", JOptionPane.ERROR_MESSAGE);
+			}
+			else {
 				// Dispose the current frame and create a new one
 				dispose();
 				new TableTopGUI(gl.getPawn(),gl,gl.getBoardSize(),gl.getGameName());
-				
-				file.close();
-				in.close();
-				
-			} catch (FileNotFoundException e1) {
-				JOptionPane.showMessageDialog(null, "File not found", "File Error", JOptionPane.ERROR_MESSAGE);
-			} catch (IOException e1) {
-				JOptionPane.showMessageDialog(null, "There was an error with the file", "File Error", JOptionPane.ERROR_MESSAGE);
-			} catch (ClassNotFoundException e) {
-	//			e.printStackTrace();
 			}
 		}
 	}
