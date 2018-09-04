@@ -45,6 +45,7 @@ public class GameLogic implements java.io.Serializable{
 	public int getBoardSize() {return boardSize;}
 	
 	public ArrayList<Pawn> getPawn() {return pawn;}
+	public void setPawn(ArrayList<Pawn> pawn) {this.pawn = pawn;}
 	
 	public Player[] getPlayer() {return player;}
 	public void setPlayer(Player[] player) {this.player = player;}
@@ -53,6 +54,8 @@ public class GameLogic implements java.io.Serializable{
 	
 	/*****************************************************/
 
+	public GameLogic() {}
+	
 	public GameLogic(String game, boolean gui) {
 		gameName = game;
 		round = 0;
@@ -135,15 +138,17 @@ public class GameLogic implements java.io.Serializable{
 							
 							// Move the selectedPawn to the new location
 							selectedPawn.move(x, y);
+							board[x][y].setPawn(selectedPawn);
+							board[x][y].setOccupied(true);
 							
-							Rules.checkCapture(board, pawn, selectedPawn, GameLogic.this);
+							Rules.checkCapture(board, pawn, selectedPawn);
 							
 							// Increment round when a player made a move
 							round++;
 							
 							// Reset the selection
-							selectedPawn = null;
-							selectedTile = null;
+//							selectedPawn = null;
+//							selectedTile = null;
 						}else {
 							System.out.println("Pawn detected in between");
 						}
@@ -198,11 +203,13 @@ public class GameLogic implements java.io.Serializable{
 			in.close();
 			
 		} catch (FileNotFoundException e1) {
-			return null;
+//			return null;
+			e1.printStackTrace();
 		} catch (IOException e1) {
-			return null;
+//			return null;
+			e1.printStackTrace();
 		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		return gl;

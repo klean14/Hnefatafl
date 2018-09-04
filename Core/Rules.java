@@ -26,9 +26,8 @@ public class Rules implements java.io.Serializable {
 	 * @param board 2D array of Tile type
 	 * @param pawns ArrayList of all the Pawn objects
 	 * @param pawn The Pawn object that initiated the check
-	 * @param game The Game object
 	 */
-	public static boolean checkCapture(Tile[][] board,ArrayList<Pawn> pawns, Pawn pawn, GameLogic game) {
+	public static boolean checkCapture(Tile[][] board,ArrayList<Pawn> pawns, Pawn pawn) {
 		boolean capture = false;
 		pawnsList = pawns;
 		int xPos = pawn.getPosX();
@@ -138,9 +137,7 @@ public class Rules implements java.io.Serializable {
 		}
 		
 		// If surrounded by all 4 sides
-		if(count == 3) {
-//			JOptionPane.showMessageDialog(null, "THE KING IS DEAD");
-//			System.out.println("THE KING IS DEAD");
+		if(count == 4) {
 			removePawn(board[xPos][yPos],pawns,king);
 		}
 		

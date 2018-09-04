@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.event.UndoableEditEvent;
@@ -139,15 +140,46 @@ public class Testing {
 	{
 		ArrayList<Pawn> pawn = new ArrayList<Pawn>();
 		
-		pawn.add(new Pawn(1,1,p1));
+		pawn.add(new Pawn(1,0,p1));
+		board[1][0].setPawn(pawn.get(0));
+		board[1][0].setOccupied(true);
+		
 		pawn.add(new KingPawn(1,2,p2));
+		board[1][2].setPawn(pawn.get(1));
+		board[1][2].setOccupied(true);
+		
 		pawn.add(new Pawn(1,3,p1));
+		board[1][3].setPawn(pawn.get(2));
+		board[1][3].setOccupied(true);
+		
 		pawn.add(new Pawn(0,2,p1));
+		board[0][2].setPawn(pawn.get(3));
+		board[0][2].setOccupied(true);
+		
 		pawn.add(new Pawn(2,3,p1));
+		board[2][3].setPawn(pawn.get(4));
+		board[2][3].setOccupied(true);
+		
 		pawn.get(0).addUndoableEditListener(new MyUndoableEditListener());
 		
-		pawn.get(4).move(2,2);
+		pawn.get(0).move(1, 1);
+		board[1][1].setPawn(pawn.get(0));
+		board[1][0].setPawn(null);
+		board[1][0].setOccupied(false);
+		board[1][1].setOccupied(true);
+		Rules.checkCapture(board, pawn, pawn.get(0));
+		
 		if(GameLogic.findPawn(1, 2,pawn) == null)
+			fail("King should not be captured");
+		
+		pawn.get(4).move(2,2);
+		board[2][3].setPawn(null);
+		board[2][2].setPawn(pawn.get(4));
+		board[2][3].setOccupied(false);
+		board[2][2].setOccupied(true);
+		
+		Rules.checkCapture(board, pawn, pawn.get(4));
+		if(GameLogic.findPawn(1, 2,pawn) != null)
 			fail("Pawn not captured");
 	}
 	
@@ -264,14 +296,22 @@ public class Testing {
 	@Test
 	public void testSave() 
 	{
+		GameLogic game = new GameLogic();
 		ArrayList<Pawn> pawn = new ArrayList<Pawn>();
 		
 		pawn.add(new Pawn(0,1,p1));
 		pawn.add(new KingPawn(0,0,p2));
 		pawn.add(new Pawn(0,3,p1));
+		pawn.get(0).addUndoableEditListener(new MyUndoableEditListener());
 		
-		if(Rules.checkEnd(pawn, board))
-			fail("checking for King did not work");
+		pawn.get(2).move(0,2);
+		
+		game.setPawn(pawn);
+		game.saveGame("test13.ser");
+		
+		File testFile = new File("test13.ser");
+		if(!testFile.exists())
+			fail("Save did not work");
 	}
 	
 	/*
@@ -281,19 +321,24 @@ public class Testing {
 	@Test
 	public void testLoad() 
 	{
+		GameLogic game = new GameLogic();
 		ArrayList<Pawn> pawn = new ArrayList<Pawn>();
 		
 		pawn.add(new Pawn(0,1,p1));
 		pawn.add(new KingPawn(0,0,p2));
 		pawn.add(new Pawn(0,3,p1));
 		
-		if(Rules.checkEnd(pawn, board))
-			fail("checking for King did not work");
+		game = game.loadGame("test13.ser");
+		
+		// In the file loaded there is a pawn at position 0,2
+		if(GameLogic.findPawn(0, 2, game.getPawn()) == null)
+			fail("Load did not work");
 	}
 	
 	@Before
 	public void setupBoard() 
 	{
+		
 		undoManager = new UndoManager();
 		int boardSize = 5;
 		board = new TileCLI[boardSize][boardSize];
@@ -303,7 +348,7 @@ public class Testing {
 			for(int j = 0; j < boardSize; j++) 
 			{
 				board[i][j] = new TileCLI(i,j);
-				if(i == 0 && j == 0 || i == boardSize-1 && j == 0 || i == 0 && j == boardSize-1 || i == boardSize-1 && j == boardSize-1 || i == (boardSize-1)/2 && j == (boardSize-1)/2) 
+				if(i == 0 && j == 0 || i == boardSize-1 && j == 0 || i == 0 && j == boardSize-1 || i == boardSize-1 && j == boardSize-1) 
 				{
 					board[i][j].setRestricted(true);
 				}
